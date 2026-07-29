@@ -1,0 +1,120 @@
+import React from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
+import {
+  FiGrid,
+  FiUsers,
+  FiFileText,
+  FiFolder,
+  FiMessageSquare,
+  FiLogOut,
+  FiPieChart,
+  FiPlusCircle,
+  FiCheckSquare
+} from 'react-icons/fi';
+
+export const Sidebar = () => {
+  const { user, logoutUser } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await logoutUser();
+    navigate('/login');
+  };
+
+  const getLinks = () => {
+    switch (user?.role) {
+      case 'admin':
+        return [
+          { to: '/admin', label: 'Dashboard', icon: <FiGrid className="h-5 w-5" /> },
+          { to: '/admin/users', label: 'Users', icon: <FiUsers className="h-5 w-5" /> },
+          { to: '/admin/requests', label: 'Client Requests', icon: <FiFileText className="h-5 w-5" /> },
+          { to: '/admin/projects', label: 'Projects', icon: <FiFolder className="h-5 w-5" /> },
+          { to: '/admin/files', label: 'File Manager', icon: <FiFolder className="h-5 w-5" /> },
+          { to: '/admin/reports', label: 'Reports', icon: <FiPieChart className="h-5 w-5" /> },
+        ];
+      case 'staff':
+        return [
+          { to: '/staff', label: 'Dashboard', icon: <FiGrid className="h-5 w-5" /> },
+          { to: '/staff/projects', label: 'My Projects', icon: <FiFolder className="h-5 w-5" /> },
+        ];
+      case 'client':
+        return [
+          { to: '/client', label: 'Dashboard', icon: <FiGrid className="h-5 w-5" /> },
+          { to: '/client/requests/new', label: 'Submit Request', icon: <FiPlusCircle className="h-5 w-5" /> },
+          { to: '/client/requests', label: 'My Requests', icon: <FiFileText className="h-5 w-5" /> },
+          { to: '/client/projects', label: 'Projects', icon: <FiFolder className="h-5 w-5" /> },
+        ];
+      default:
+        return [];
+    }
+  };
+
+  const links = getLinks();
+
+  return (
+    <aside className="fixed bottom-0 left-0 z-20 flex h-16 w-full flex-row border-t border-slate-800 bg-slate-950 px-2 py-1 text-slate-400 md:sticky md:top-0 md:h-screen md:w-64 md:flex-col md:border-t-0 md:border-r md:px-4 md:py-6">
+      {/* Brand logo (visible on md screens) */}
+      <div className="hidden items-center gap-3 px-3 mb-8 md:flex">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-500 text-white shadow-lg shadow-indigo-500/20">
+          <FiCheckSquare className="h-6 w-6" />
+        </div>
+        <div>
+          <h1 className="text-lg font-bold text-white tracking-tight">Work Portal</h1>
+          <p className="text-xxs font-medium uppercase tracking-wider text-slate-500">{user?.role} Space</p>
+        </div>
+      </div>
+
+      {/* Nav Links */}
+      <nav className="flex w-full flex-row justify-around items-center gap-1 md:flex-1 md:flex-col md:justify-start md:items-stretch md:gap-2">
+        {links.map((link) => (
+          <NavLink
+            key={link.to}
+            to={link.to}
+            end={link.to === '/admin' || link.to === '/staff' || link.to === '/client'}
+            className={({ isActive }) =>
+              `flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all duration-200 ${
+                isActive
+                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/10'
+                  : 'hover:bg-slate-900/60 hover:text-slate-200'
+              }`
+            }
+          >
+            {link.icon}
+            <span className="hidden md:inline">{link.label}</span>
+          </NavLink>
+        ))}
+
+        {/* Mobile logout option, otherwise handled at topbar */}
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all duration-200 hover:bg-red-500/10 hover:text-red-400 md:hidden"
+        >
+          <FiLogOut className="h-5 w-5" />
+        </button>
+      </nav>
+
+      {/* Footer / Logout (desktop) */}
+      <div className="hidden border-t border-slate-800/80 pt-4 md:block">
+        <div className="flex items-center justify-between px-3">
+          <div className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded-full bg-slate-800 flex items-center justify-center text-white font-semibold uppercase">
+              {user?.fullName?.charAt(0) || 'U'}
+            </div>
+            <div className="overflow-hidden">
+              <p className="truncate text-xs font-semibold text-white">{user?.fullName}</p>
+              <p className="truncate text-xxs text-slate-500">{user?.email}</p>
+            </div>
+          </div>
+          <button
+            onClick={handleLogout}
+            title="Sign Out"
+            className="rounded-lg p-1.5 hover:bg-red-500/10 hover:text-red-400 transition-colors"
+          >
+            <FiLogOut className="h-5 w-5" />
+          </button>
+        </div>
+      </div>
+    </aside>
+  );
+};
