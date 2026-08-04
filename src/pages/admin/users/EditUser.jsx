@@ -31,7 +31,7 @@ export const EditUser = () => {
           setRole(user.role);
           setStatus(user.status);
           if (user.profileImage) {
-            setImagePreview(`http://localhost:5000${user.profileImage}`);
+            setImagePreview(user.profileImage.startsWith('http') ? user.profileImage : `${import.meta.env.VITE_SERVER_URL || 'http://localhost:5000'}${user.profileImage}`);
           }
         }
       } catch (err) {

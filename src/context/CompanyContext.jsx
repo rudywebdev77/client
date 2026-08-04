@@ -49,7 +49,8 @@ export const CompanyProvider = ({ children }) => {
     const logo = logoPath !== undefined ? logoPath : companyLogo;
     if (!logo) return null;
     if (logo.startsWith('http')) return logo;
-    return `http://localhost:5000/uploads/${logo}`;
+    const serverUrl = import.meta.env.VITE_SERVER_URL || 'http://localhost:5000';
+    return `${serverUrl}/uploads/${logo}`;
   };
 
   const updateBranding = async ({

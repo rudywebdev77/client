@@ -149,7 +149,7 @@ export const UserList = () => {
                     <td className="px-6 py-4 flex items-center gap-3">
                       <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full bg-slate-800 flex items-center justify-center text-white font-bold uppercase">
                         {u.profileImage ? (
-                          <img src={`http://localhost:5000${u.profileImage}`} alt={u.fullName} className="h-full w-full object-cover" />
+                          <img src={u.profileImage.startsWith('http') ? u.profileImage : `${import.meta.env.VITE_SERVER_URL || 'http://localhost:5000'}${u.profileImage}`} alt={u.fullName} className="h-full w-full object-cover" />
                         ) : (
                           u.fullName.charAt(0)
                         )}

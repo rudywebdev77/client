@@ -317,7 +317,7 @@ export const Settings = () => {
     const img = profileForm.profileImage || user?.profileImage;
     if (img) {
       if (img.startsWith('http')) return img;
-      return `http://localhost:5000/uploads/${img}`;
+      return `${import.meta.env.VITE_SERVER_URL || 'http://localhost:5000'}/uploads/${img}`;
     }
     return null;
   };

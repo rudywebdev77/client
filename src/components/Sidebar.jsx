@@ -151,7 +151,7 @@ export const Sidebar = () => {
             <div className="h-9 w-9 overflow-hidden rounded-full bg-slate-800 flex items-center justify-center text-white font-semibold uppercase shrink-0">
               {user?.profileImage ? (
                 <img
-                  src={user.profileImage.startsWith('http') ? user.profileImage : `http://localhost:5000/uploads/${user.profileImage}`}
+                  src={user.profileImage.startsWith('http') ? user.profileImage : `${import.meta.env.VITE_SERVER_URL || 'http://localhost:5000'}/uploads/${user.profileImage}`}
                   alt={user.fullName}
                   className="h-full w-full object-cover"
                 />

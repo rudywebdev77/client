@@ -176,7 +176,7 @@ export const ProjectDetail = () => {
                 <h3 className="text-xs font-bold text-white uppercase tracking-wider">Project Files</h3>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   {project.referenceFiles.map((file) => (
-                    <a key={file._id} href={`http://localhost:5000${file.filePath}`} target="_blank" rel="noreferrer" className="flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-900/40 p-3 hover:bg-slate-900/80 transition-colors">
+                    <a key={file._id} href={file.filePath?.startsWith('http') ? file.filePath : `${import.meta.env.VITE_SERVER_URL || 'http://localhost:5000'}${file.filePath}`} target="_blank" rel="noreferrer" className="flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-900/40 p-3 hover:bg-slate-900/80 transition-colors">
                       <FiFile className="h-5 w-5 text-indigo-400 shrink-0" />
                       <div className="overflow-hidden">
                         <p className="truncate text-xs font-semibold text-white">{file.originalName}</p>

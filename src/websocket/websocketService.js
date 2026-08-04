@@ -22,7 +22,8 @@ class WebSocketService {
     if (this.isConnecting) return;
     this.isConnecting = true;
 
-    const wsUrl = `ws://localhost:5000?token=${token}`;
+    const socketBaseUrl = import.meta.env.VITE_SOCKET_URL || 'ws://localhost:5000';
+    const wsUrl = `${socketBaseUrl}?token=${token}`;
     console.log('Connecting to WebSocket server...');
     this.ws = new WebSocket(wsUrl);
 

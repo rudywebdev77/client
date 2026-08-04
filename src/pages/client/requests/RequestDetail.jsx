@@ -106,7 +106,7 @@ export const RequestDetail = () => {
                 {request.files.map((file) => (
                   <a
                     key={file._id}
-                    href={`http://localhost:5000${file.filePath}`}
+                    href={file.filePath?.startsWith('http') ? file.filePath : `${import.meta.env.VITE_SERVER_URL || 'http://localhost:5000'}${file.filePath}`}
                     target="_blank"
                     rel="noreferrer"
                     className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-900/40 p-3 hover:bg-slate-900/80 transition-colors"

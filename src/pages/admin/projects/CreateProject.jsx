@@ -226,7 +226,7 @@ export const CreateProject = () => {
                         const avatarUrl = st.profileImage
                           ? st.profileImage.startsWith('http')
                             ? st.profileImage
-                            : `http://localhost:5000/uploads/${st.profileImage}`
+                            : `${import.meta.env.VITE_SERVER_URL || 'http://localhost:5000'}/uploads/${st.profileImage}`
                           : null;
                         return (
                           <tr key={st._id} className="hover:bg-slate-900/60 transition-colors">

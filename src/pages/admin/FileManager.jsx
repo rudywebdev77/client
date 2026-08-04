@@ -198,7 +198,7 @@ export const FileManager = () => {
                     </td>
                     <td className="px-6 py-4 text-center whitespace-nowrap">
                       <a
-                        href={`http://localhost:5000${file.filePath}`}
+                        href={file.filePath?.startsWith('http') ? file.filePath : `${import.meta.env.VITE_SERVER_URL || 'http://localhost:5000'}${file.filePath}`}
                         download
                         target="_blank"
                         rel="noreferrer"

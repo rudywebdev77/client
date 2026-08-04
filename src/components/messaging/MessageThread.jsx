@@ -168,7 +168,8 @@ const VoiceMessagePlayer = ({ audioUrl, duration }) => {
   };
 
   // Safe fallback url mapping
-  const secureUrl = audioUrl.startsWith('http') ? audioUrl : `http://localhost:5000${audioUrl}`;
+  const serverUrl = import.meta.env.VITE_SERVER_URL || 'http://localhost:5000';
+  const secureUrl = audioUrl.startsWith('http') ? audioUrl : `${serverUrl}${audioUrl}`;
 
   return (
     <div className="flex items-center gap-3 my-0.5 min-w-[220px]">
@@ -816,7 +817,7 @@ export const MessageThread = ({ projectId }) => {
 
             const secureFileUrl = msg.attachment?.startsWith('http')
               ? msg.attachment
-              : `http://localhost:5000${msg.attachment}`;
+              : `${import.meta.env.VITE_SERVER_URL || 'http://localhost:5000'}${msg.attachment}`;
 
             return (
               <div key={msg._id} className="flex flex-col">

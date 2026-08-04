@@ -63,7 +63,7 @@ export const UserDetail = () => {
         <div className="flex flex-col items-center gap-4 sm:flex-row">
           <div className="h-20 w-20 overflow-hidden rounded-full bg-slate-850 flex items-center justify-center text-white text-3xl font-bold uppercase ring-2 ring-slate-800">
             {user.profileImage ? (
-              <img src={`http://localhost:5000${user.profileImage}`} alt={user.fullName} className="h-full w-full object-cover" />
+              <img src={user.profileImage.startsWith('http') ? user.profileImage : `${import.meta.env.VITE_SERVER_URL || 'http://localhost:5000'}${user.profileImage}`} alt={user.fullName} className="h-full w-full object-cover" />
             ) : (
               user.fullName.charAt(0)
             )}

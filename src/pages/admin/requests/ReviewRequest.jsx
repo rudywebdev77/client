@@ -129,7 +129,7 @@ export const ReviewRequest = () => {
             <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-6 space-y-3">
               <h3 className="text-xs font-bold text-white uppercase tracking-wider">Attached Files ({request.files.length})</h3>
               {request.files.map((file) => (
-                <a key={file._id} href={`http://localhost:5000${file.filePath}`} target="_blank" rel="noreferrer"
+                <a key={file._id} href={file.filePath?.startsWith('http') ? file.filePath : `${import.meta.env.VITE_SERVER_URL || 'http://localhost:5000'}${file.filePath}`} target="_blank" rel="noreferrer"
                   className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-900/40 p-3 hover:bg-slate-900/70 transition-colors">
                   <div className="flex items-center gap-2 overflow-hidden">
                     <FiFile className="h-5 w-5 text-indigo-400 shrink-0" />

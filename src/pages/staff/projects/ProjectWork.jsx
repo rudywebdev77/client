@@ -161,7 +161,7 @@ export const ProjectWork = () => {
                 <h3 className="text-xs font-bold text-white uppercase tracking-wider">Reference Attachments</h3>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   {project.referenceFiles.map((f) => (
-                    <a key={f._id} href={`http://localhost:5000${f.filePath}`} target="_blank" rel="noreferrer" className="flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-900/40 p-3 text-xs text-white hover:bg-slate-900">
+                    <a key={f._id} href={f.filePath?.startsWith('http') ? f.filePath : `${import.meta.env.VITE_SERVER_URL || 'http://localhost:5000'}${f.filePath}`} target="_blank" rel="noreferrer" className="flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-900/40 p-3 text-xs text-white hover:bg-slate-900">
                       <FiFile className="text-indigo-400" /> {f.originalName}
                     </a>
                   ))}
