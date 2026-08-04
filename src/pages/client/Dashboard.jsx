@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getClientDashboard } from '../../services/dashboardService';
 import StatsCard from '../../components/dashboard/StatsCard';
 import RecentActivity from '../../components/dashboard/RecentActivity';
-import { FiPlusCircle, FiFileText, FiFolder, FiCheckCircle } from 'react-icons/fi';
+import { FiPlusCircle, FiFileText, FiFolder, FiCheckCircle, FiMessageSquare } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
@@ -52,30 +52,43 @@ export const ClientDashboard = () => {
       </div>
 
       {stats && (
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
           <StatsCard
             title="Submitted Requests"
-            value={stats.submittedRequests}
+            value={stats.submittedRequests ?? 0}
             icon={<FiFileText className="h-6 w-6 text-indigo-400" />}
             color="indigo"
+            to="/client/requests"
           />
           <StatsCard
             title="Active Projects"
-            value={stats.activeProjects}
+            value={stats.activeProjects ?? 0}
             icon={<FiFolder className="h-6 w-6 text-blue-400" />}
             color="blue"
+            to="/client/projects?status=active"
           />
           <StatsCard
             title="Completed Projects"
-            value={stats.completedProjects}
+            value={stats.completedProjects ?? 0}
             icon={<FiCheckCircle className="h-6 w-6 text-emerald-400" />}
             color="emerald"
+            to="/client/projects?status=completed"
           />
           <StatsCard
             title="Shared Files"
-            value={stats.totalFiles}
+            value={stats.totalFiles ?? 0}
             icon={<FiFileText className="h-6 w-6 text-purple-400" />}
             color="purple"
+            className="lg:col-span-2"
+          />
+          <StatsCard
+            title="Unread Messages"
+            value={stats.unreadMessages ?? 0}
+            icon={<FiMessageSquare className="h-6 w-6" />}
+            color="gold"
+            glow={(stats.unreadMessages ?? 0) > 0}
+            className="lg:col-span-1"
+            to="/client/projects"
           />
         </div>
       )}

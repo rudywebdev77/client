@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { getRequests } from '../../../services/requestService';
 import { FiSearch, FiEye, FiClock, FiMessageSquare } from 'react-icons/fi';
 import toast from 'react-hot-toast';
+import TablePagination from '../../../components/shared/TablePagination';
 
 const STATUS_COLORS = {
   new: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
@@ -20,20 +21,24 @@ const PRIORITY_COLORS = {
 };
 
 export const AllRequests = () => {
+  const [searchParams] = useSearchParams();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [status, setStatus] = useState('');
+  const [status, setStatus] = useState(searchParams.get('status') || '');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
   const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
 
   const fetchRequests = async () => {
     setLoading(true);
     try {
-      const data = await getRequests({ status, search, page, limit: 10 });
+      const data = await getRequests({ status, search, page, limit: pageSize });
       if (data.success) {
         setRequests(data.requests);
         setTotalPages(data.pagination.pages);
+        setTotal(data.pagination.total);
       }
     } catch (err) {
       toast.error('Failed to load requests');
@@ -42,7 +47,13 @@ export const AllRequests = () => {
     }
   };
 
-  useEffect(() => { fetchRequests(); }, [page, status]);
+  useEffect(() => {
+    setPage(1);
+  }, [search, status]);
+
+  useEffect(() => {
+    fetchRequests();
+  }, [page, status, pageSize, search]);
 
   const handleSearchSubmit = (e) => { e.preventDefault(); setPage(1); fetchRequests(); };
 
@@ -138,12 +149,17 @@ export const AllRequests = () => {
             </table>
           </div>
         )}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between border-t border-slate-800/80 px-6 py-4">
-            <button onClick={() => setPage((p) => Math.max(p - 1, 1))} disabled={page === 1} className="rounded-lg border border-slate-800 bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-300 disabled:opacity-50">Previous</button>
-            <span className="text-xs text-slate-400">Page <span className="font-semibold text-white">{page}</span> of {totalPages}</span>
-            <button onClick={() => setPage((p) => Math.min(p + 1, totalPages))} disabled={page === totalPages} className="rounded-lg border border-slate-800 bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-300 disabled:opacity-50">Next</button>
-          </div>
+
+        {/* Pagination */}
+        {!loading && (
+          <TablePagination
+            page={page}
+            totalPages={totalPages}
+            total={total}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            onPageSizeChange={(size) => { setPageSize(size); setPage(1); }}
+          />
         )}
       </div>
     </div>

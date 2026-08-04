@@ -34,12 +34,16 @@ import { CreateProject } from '../pages/admin/projects/CreateProject';
 import { ProjectDetail } from '../pages/admin/projects/ProjectDetail';
 import { EditProject } from '../pages/admin/projects/EditProject';
 
-// Admin — Reports
+// Admin — Reports & Settings
 import { Reports } from '../pages/admin/Reports';
+import { FileManager } from '../pages/admin/FileManager';
+import { Settings as AdminSettings } from '../pages/admin/Settings';
 
-// Staff — Projects
+// Staff — Projects & Settings
 import { MyProjects as StaffMyProjects } from '../pages/staff/projects/MyProjects';
 import { ProjectWork } from '../pages/staff/projects/ProjectWork';
+import { Settings as StaffSettings } from '../pages/staff/Settings';
+
 
 // Client — Requests
 import { SubmitRequest } from '../pages/client/requests/SubmitRequest';
@@ -49,6 +53,10 @@ import { RequestDetail } from '../pages/client/requests/RequestDetail';
 // Client — Projects
 import { MyProjects as ClientMyProjects } from '../pages/client/projects/MyProjects';
 import { ProjectView } from '../pages/client/projects/ProjectView';
+
+// Client — Activity & Settings
+import { Activity } from '../pages/client/Activity';
+import { Settings as ClientSettings } from '../pages/client/Settings';
 
 // Shared
 import { Profile } from '../pages/shared/Profile';
@@ -82,6 +90,7 @@ export const AppRoutes = () => {
       {/* Public routes */}
       <Route path="/login" element={<Login />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/reset-password/:token" element={<ResetPassword />} />
 
       {/* Role-based home redirect */}
@@ -114,11 +123,13 @@ export const AppRoutes = () => {
         <Route path="projects/:id" element={<ProjectDetail />} />
         <Route path="projects/edit/:id" element={<EditProject />} />
 
-        {/* Files, Reports, Profile, Notifications */}
-        <Route path="files" element={<div className="text-white p-4">File Manager</div>} />
+        {/* Files, Reports, Profile, Notifications, Activity, Settings */}
+        <Route path="files" element={<FileManager />} />
         <Route path="reports" element={<Reports />} />
         <Route path="profile" element={<Profile />} />
         <Route path="notifications" element={<Notifications />} />
+        <Route path="activity" element={<Activity />} />
+        <Route path="settings" element={<AdminSettings />} />
       </Route>
 
       {/* ── Staff routes ── */}
@@ -135,6 +146,8 @@ export const AppRoutes = () => {
         <Route path="projects/:id" element={<ProjectWork />} />
         <Route path="profile" element={<Profile />} />
         <Route path="notifications" element={<Notifications />} />
+        <Route path="activity" element={<Activity />} />
+        <Route path="settings" element={<StaffSettings />} />
       </Route>
 
       {/* ── Client routes ── */}
@@ -154,6 +167,8 @@ export const AppRoutes = () => {
         <Route path="projects/:id" element={<ProjectView />} />
         <Route path="profile" element={<Profile />} />
         <Route path="notifications" element={<Notifications />} />
+        <Route path="activity" element={<Activity />} />
+        <Route path="settings" element={<ClientSettings />} />
       </Route>
 
       {/* Catch-all fallback */}

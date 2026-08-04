@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { getProjects } from '../../../services/projectService';
-import { FiFolder, FiClock, FiEye } from 'react-icons/fi';
+import { FiFolder, FiClock, FiEye, FiSearch } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
 const STATUS_BADGES = {
@@ -15,8 +15,11 @@ const STATUS_BADGES = {
 };
 
 export const MyProjects = () => {
+  const [searchParams] = useSearchParams();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState(searchParams.get('status') || 'all');
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -32,20 +35,63 @@ export const MyProjects = () => {
     fetchProjects();
   }, []);
 
+  const filteredProjects = projects.filter((proj) => {
+    const cleanSearch = search.trim().toLowerCase();
+    const matchesSearch = !cleanSearch ||
+      proj.projectName?.toLowerCase().includes(cleanSearch) ||
+      proj.description?.toLowerCase().includes(cleanSearch);
+
+    let matchesStatus = true;
+    if (statusFilter !== 'all') {
+      if (statusFilter === 'active') {
+        matchesStatus = proj.status !== 'completed' && proj.status !== 'cancelled';
+      } else {
+        matchesStatus = proj.status === statusFilter;
+      }
+    }
+
+    return matchesSearch && matchesStatus;
+  });
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-white tracking-tight">My Active & Completed Projects</h1>
-        <p className="text-sm text-slate-400">Track progress, chat with team, and review deliverables.</p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-white tracking-tight">My Active & Completed Projects</h1>
+          <p className="text-sm text-slate-400">Track progress, chat with team, and review deliverables.</p>
+        </div>
+
+        {/* Search & Filter Bar */}
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search projects..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full sm:w-64 rounded-xl border border-slate-800 bg-slate-950/40 py-2 pl-9 pr-4 text-xs text-white placeholder-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            />
+            <FiSearch className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-500" />
+          </div>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="rounded-xl border border-slate-800 bg-slate-950/40 px-3 py-2 text-xs text-white focus:border-indigo-500 focus:outline-none"
+          >
+            <option value="all">All Statuses</option>
+            <option value="active">Active Projects</option>
+            <option value="completed">Completed Projects</option>
+          </select>
+        </div>
       </div>
 
       {loading ? (
         <div className="flex h-64 items-center justify-center"><div className="h-10 w-10 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent"></div></div>
-      ) : projects.length === 0 ? (
-        <div className="flex h-64 flex-col items-center justify-center text-slate-500"><p className="text-lg">No active projects yet.</p></div>
+      ) : filteredProjects.length === 0 ? (
+        <div className="flex h-64 flex-col items-center justify-center text-slate-500"><p className="text-lg">No projects found matching your filter.</p></div>
       ) : (
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-          {projects.map((proj) => (
+          {filteredProjects.map((proj) => (
             <div key={proj._id} className="flex flex-col justify-between rounded-xl border border-slate-800 bg-slate-950/40 p-5 backdrop-blur-xl shadow-lg">
               <div className="space-y-3">
                 <div className="flex items-center justify-between">

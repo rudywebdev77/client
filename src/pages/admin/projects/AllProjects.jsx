@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { getProjects } from '../../../services/projectService';
 import { FiPlus, FiSearch, FiFolder, FiEye, FiClock, FiUsers } from 'react-icons/fi';
 import toast from 'react-hot-toast';
+import TablePagination from '../../../components/shared/TablePagination';
 
 const STATUS_BADGES = {
   not_started: 'bg-slate-500/10 text-slate-400 border-slate-500/20',
@@ -16,20 +17,24 @@ const STATUS_BADGES = {
 };
 
 export const AllProjects = () => {
+  const [searchParams] = useSearchParams();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [status, setStatus] = useState('');
+  const [status, setStatus] = useState(searchParams.get('status') || '');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
   const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
 
   const fetchProjects = async () => {
     setLoading(true);
     try {
-      const data = await getProjects({ status, search, page, limit: 10 });
+      const data = await getProjects({ status, search, page, limit: pageSize });
       if (data.success) {
         setProjects(data.projects);
         setTotalPages(data.pagination.pages);
+        setTotal(data.pagination.total);
       }
     } catch (err) {
       toast.error('Failed to load projects');
@@ -38,7 +43,13 @@ export const AllProjects = () => {
     }
   };
 
-  useEffect(() => { fetchProjects(); }, [page, status]);
+  useEffect(() => {
+    setPage(1);
+  }, [search, status]);
+
+  useEffect(() => {
+    fetchProjects();
+  }, [page, status, pageSize, search]);
 
   const handleSearchSubmit = (e) => { e.preventDefault(); setPage(1); fetchProjects(); };
 
@@ -139,12 +150,16 @@ export const AllProjects = () => {
           </div>
         )}
 
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between border-t border-slate-800/80 px-6 py-4">
-            <button onClick={() => setPage((p) => Math.max(p - 1, 1))} disabled={page === 1} className="rounded-lg border border-slate-800 bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-300 disabled:opacity-50">Previous</button>
-            <span className="text-xs text-slate-400">Page <span className="font-semibold text-white">{page}</span> of {totalPages}</span>
-            <button onClick={() => setPage((p) => Math.min(p + 1, totalPages))} disabled={page === totalPages} className="rounded-lg border border-slate-800 bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-300 disabled:opacity-50">Next</button>
-          </div>
+        {/* Pagination */}
+        {!loading && (
+          <TablePagination
+            page={page}
+            totalPages={totalPages}
+            total={total}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            onPageSizeChange={(size) => { setPageSize(size); setPage(1); }}
+          />
         )}
       </div>
     </div>

@@ -5,7 +5,7 @@ import { getUsers } from '../../../services/userService';
 import { getRequest } from '../../../services/requestService';
 import FileUpload from '../../../components/FileUpload';
 import toast from 'react-hot-toast';
-import { FiArrowLeft, FiFolderPlus } from 'react-icons/fi';
+import { FiArrowLeft, FiFolderPlus, FiSearch, FiX, FiPlus } from 'react-icons/fi';
 
 export const CreateProject = () => {
   const [searchParams] = useSearchParams();
@@ -16,6 +16,7 @@ export const CreateProject = () => {
   const [description, setDescription] = useState('');
   const [clientId, setClientId] = useState(clientIdParam || '');
   const [assignedStaff, setAssignedStaff] = useState([]);
+  const [staffSearch, setStaffSearch] = useState('');
   const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
   const [deadline, setDeadline] = useState('');
   const [priority, setPriority] = useState('medium');
@@ -112,6 +113,17 @@ export const CreateProject = () => {
     }
   };
 
+  const filteredStaff = staffList.filter((st) => {
+    if (!staffSearch) return true;
+    const q = staffSearch.toLowerCase();
+    return (
+      st.fullName?.toLowerCase().includes(q) ||
+      st.email?.toLowerCase().includes(q) ||
+      st.department?.toLowerCase().includes(q) ||
+      st.title?.toLowerCase().includes(q)
+    );
+  });
+
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       <div className="flex items-center gap-3">
@@ -124,13 +136,13 @@ export const CreateProject = () => {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6 rounded-xl border border-slate-800 bg-slate-950/40 p-6 backdrop-blur-xl shadow-xl">
+      <form onSubmit={handleSubmit} className="space-y-6 rounded-2xl border border-slate-800 bg-slate-950/60 p-6 sm:p-8 backdrop-blur-xl shadow-2xl">
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <div>
-            <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">Project Name *</label>
+            <label className="text-xs font-bold uppercase tracking-wider text-slate-300">Project Name *</label>
             <input
               type="text" required
-              className="mt-1 block w-full rounded-lg border border-slate-800 bg-slate-900/50 px-3 py-2.5 text-white placeholder-slate-500 focus:border-indigo-500 focus:outline-none text-sm"
+              className="mt-2 block w-full rounded-xl border border-slate-800 bg-slate-900/60 px-4 py-3 text-white placeholder-slate-500 focus:border-indigo-500 focus:outline-none text-sm transition"
               placeholder="e.g. Website Overhaul Phase 1"
               value={projectName}
               onChange={(e) => setProjectName(e.target.value)}
@@ -138,12 +150,12 @@ export const CreateProject = () => {
           </div>
 
           <div>
-            <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">Related Client *</label>
+            <label className="text-xs font-bold uppercase tracking-wider text-slate-300">Related Client *</label>
             <select
               required
               value={clientId}
               onChange={(e) => setClientId(e.target.value)}
-              className="mt-1 block w-full rounded-lg border border-slate-800 bg-slate-900/50 px-3 py-2.5 text-white focus:border-indigo-500 focus:outline-none text-sm"
+              className="mt-2 block w-full rounded-xl border border-slate-800 bg-slate-900/60 px-4 py-3 text-white focus:border-indigo-500 focus:outline-none text-sm transition"
             >
               <option value="">Select a Client...</option>
               {clients.map((c) => (
@@ -153,42 +165,114 @@ export const CreateProject = () => {
           </div>
 
           <div className="md:col-span-2">
-            <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">Project Description *</label>
+            <label className="text-xs font-bold uppercase tracking-wider text-slate-300">Project Description *</label>
             <textarea
               required rows={4}
-              className="mt-1 block w-full rounded-lg border border-slate-800 bg-slate-900/50 px-3 py-2.5 text-white placeholder-slate-500 focus:border-indigo-500 focus:outline-none text-sm"
+              className="mt-2 block w-full rounded-xl border border-slate-800 bg-slate-900/60 px-4 py-3 text-white placeholder-slate-500 focus:border-indigo-500 focus:outline-none text-sm transition"
               placeholder="Describe the full scope and technical requirements..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             />
           </div>
 
-          {/* Staff Assignment */}
-          <div className="md:col-span-2">
-            <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">Assign Staff Members</label>
-            <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
-              {staffList.map((st) => {
-                const isSelected = assignedStaff.includes(st._id);
-                return (
-                  <div
-                    key={st._id}
-                    onClick={() => handleStaffToggle(st._id)}
-                    className={`cursor-pointer flex items-center justify-between rounded-lg border p-3 transition-colors ${
-                      isSelected
-                        ? 'border-indigo-500 bg-indigo-500/10 text-white'
-                        : 'border-slate-800 bg-slate-900/40 text-slate-400 hover:bg-slate-900'
-                    }`}
-                  >
-                    <div>
-                      <p className="text-xs font-semibold">{st.fullName}</p>
-                      <p className="text-xxs opacity-70">{st.email}</p>
-                    </div>
-                    <span className={`text-xxs font-bold uppercase rounded px-2 py-0.5 ${isSelected ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-400'}`}>
-                      {isSelected ? 'Assigned' : 'Assign'}
-                    </span>
-                  </div>
-                );
-              })}
+          {/* ── Enterprise Staff Assignment Section (Matching Design Specification) ── */}
+          <div className="md:col-span-2 space-y-4 pt-2 border-t border-slate-800/80">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-300">Assign Staff Members</label>
+              <span className="text-xs font-semibold text-slate-400 font-mono">
+                {assignedStaff.length} Staff Assigned
+              </span>
+            </div>
+
+            {/* Search Input Box */}
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Search and Add</label>
+              <div className="relative">
+                <FiSearch className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-500" />
+                <input
+                  type="text"
+                  value={staffSearch}
+                  onChange={(e) => setStaffSearch(e.target.value)}
+                  placeholder="e.g., Jane Doe, staff3@portal.com"
+                  className="w-full rounded-xl border border-slate-800 bg-slate-900/60 py-3 pl-10 pr-4 text-xs text-white placeholder-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition"
+                />
+              </div>
+            </div>
+
+            {/* Staff Table / List */}
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Project Staff Assignment List</label>
+              <div className="rounded-xl border border-slate-800/80 bg-slate-900/40 overflow-hidden shadow-inner max-h-72 overflow-y-auto thin-scrollbar">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr className="border-b border-slate-800/80 bg-slate-900/80 text-[10px] uppercase font-bold tracking-wider text-slate-400 select-none">
+                      <th className="py-3 px-4">Profile</th>
+                      <th className="py-3 px-4">Email</th>
+                      <th className="py-3 px-4">Department</th>
+                      <th className="py-3 px-4">Role</th>
+                      <th className="py-3 px-4 text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/40 font-medium">
+                    {filteredStaff.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="py-6 text-center text-xs text-slate-500">
+                          No staff members found matching search query.
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredStaff.map((st) => {
+                        const isAssigned = assignedStaff.includes(st._id);
+                        const avatarUrl = st.profileImage
+                          ? st.profileImage.startsWith('http')
+                            ? st.profileImage
+                            : `http://localhost:5000/uploads/${st.profileImage}`
+                          : null;
+                        return (
+                          <tr key={st._id} className="hover:bg-slate-900/60 transition-colors">
+                            <td className="py-3 px-4">
+                              <div className="flex items-center gap-3">
+                                {avatarUrl ? (
+                                  <img src={avatarUrl} alt={st.fullName} className="h-8 w-8 rounded-full object-cover border border-slate-700 shadow-sm" />
+                                ) : (
+                                  <div className="h-8 w-8 rounded-full bg-indigo-600/30 border border-indigo-500/30 text-indigo-300 flex items-center justify-center font-bold text-xxs shadow-sm">
+                                    {st.fullName?.charAt(0) || 'S'}
+                                  </div>
+                                )}
+                                <span className="font-semibold text-slate-200">{st.fullName}</span>
+                              </div>
+                            </td>
+                            <td className="py-3 px-4 text-slate-400 font-mono text-xxs">{st.email}</td>
+                            <td className="py-3 px-4 text-slate-300">{st.department || 'Development'}</td>
+                            <td className="py-3 px-4 text-slate-300">{st.title || st.role || 'Staff'}</td>
+                            <td className="py-3 px-4 text-right">
+                              {isAssigned ? (
+                                <button
+                                  type="button"
+                                  onClick={() => handleStaffToggle(st._id)}
+                                  className="inline-flex items-center gap-1 text-xxs font-bold text-red-400 hover:text-red-300 transition tracking-wider"
+                                >
+                                  <span>REMOVE</span>
+                                  <span className="text-xs font-normal">✕</span>
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => handleStaffToggle(st._id)}
+                                  className="inline-flex items-center gap-1 text-xxs font-bold text-indigo-400 hover:text-indigo-300 transition tracking-wider"
+                                >
+                                  <span>ADD</span>
+                                  <span className="text-xs font-normal">+</span>
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
 

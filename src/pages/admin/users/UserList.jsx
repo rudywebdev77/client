@@ -1,24 +1,29 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import * as userService from '../../../services/userService';
 import { FiPlus, FiSearch, FiEdit, FiTrash2, FiEye, FiUserCheck, FiUserX } from 'react-icons/fi';
 import toast from 'react-hot-toast';
+import TablePagination from '../../../components/shared/TablePagination';
 
 export const UserList = () => {
+  const [searchParams] = useSearchParams();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [role, setRole] = useState('');
+  const [role, setRole] = useState(searchParams.get('role') || '');
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
   const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
 
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const data = await userService.getUsers({ search, role, page, limit: 8 });
+      const data = await userService.getUsers({ search, role, page, limit: pageSize });
       if (data.success) {
         setUsers(data.users);
         setTotalPages(data.pagination.pages);
+        setTotal(data.pagination.total);
       }
     } catch (err) {
       toast.error('Failed to load users');
@@ -27,9 +32,14 @@ export const UserList = () => {
     }
   };
 
+  // Reset page to 1 whenever search or role changes
+  useEffect(() => {
+    setPage(1);
+  }, [search, role]);
+
   useEffect(() => {
     fetchUsers();
-  }, [page, role]);
+  }, [page, role, pageSize, search]);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -69,7 +79,7 @@ export const UserList = () => {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white tracking-tight">User Management</h1>
-          <p className="text-sm text-slate-400">Manage admins, staff members, and clients.</p>
+          <p className="text-sm text-slate-400">Manage staff members and clients.</p>
         </div>
         <Link
           to="/admin/users/new"
@@ -104,7 +114,6 @@ export const UserList = () => {
             className="rounded-lg border border-slate-800 bg-slate-900/50 px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none"
           >
             <option value="">All Roles</option>
-            <option value="admin">Admin</option>
             <option value="staff">Staff</option>
             <option value="client">Client</option>
           </select>
@@ -154,11 +163,10 @@ export const UserList = () => {
                     <td className="px-6 py-4 text-slate-400">{u.phone || 'N/A'}</td>
                     <td className="px-6 py-4">
                       <span
-                        className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-xxs font-semibold uppercase tracking-wider ${
-                          u.status === 'active'
+                        className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-xxs font-semibold uppercase tracking-wider ${u.status === 'active'
                             ? 'bg-emerald-500/10 text-emerald-400'
                             : 'bg-red-500/10 text-red-400'
-                        }`}
+                          }`}
                       >
                         {u.status}
                       </span>
@@ -182,11 +190,10 @@ export const UserList = () => {
                         <button
                           onClick={() => handleStatusToggle(u._id, u.status)}
                           title={u.status === 'active' ? 'Deactivate User' : 'Activate User'}
-                          className={`rounded-lg p-1.5 transition-colors ${
-                            u.status === 'active'
+                          className={`rounded-lg p-1.5 transition-colors ${u.status === 'active'
                               ? 'hover:bg-amber-500/10 hover:text-amber-400'
                               : 'hover:bg-emerald-500/10 hover:text-emerald-400'
-                          }`}
+                            }`}
                         >
                           {u.status === 'active' ? <FiUserX className="h-4.5 w-4.5" /> : <FiUserCheck className="h-4.5 w-4.5" />}
                         </button>
@@ -206,27 +213,16 @@ export const UserList = () => {
           </div>
         )}
 
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between border-t border-slate-800/80 px-6 py-4">
-            <button
-              onClick={() => setPage((p) => Math.max(p - 1, 1))}
-              disabled={page === 1}
-              className="rounded-lg border border-slate-800 bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-300 transition-colors hover:bg-slate-850 disabled:opacity-50"
-            >
-              Previous
-            </button>
-            <span className="text-xs text-slate-400">
-              Page <span className="font-semibold text-white">{page}</span> of {totalPages}
-            </span>
-            <button
-              onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
-              disabled={page === totalPages}
-              className="rounded-lg border border-slate-800 bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-300 transition-colors hover:bg-slate-850 disabled:opacity-50"
-            >
-              Next
-            </button>
-          </div>
+        {/* Pagination – always visible once data is loaded */}
+        {!loading && (
+          <TablePagination
+            page={page}
+            totalPages={totalPages}
+            total={total}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            onPageSizeChange={(size) => { setPageSize(size); setPage(1); }}
+          />
         )}
       </div>
     </div>

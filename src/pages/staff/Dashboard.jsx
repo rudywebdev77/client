@@ -3,7 +3,7 @@ import { getStaffDashboard } from '../../services/dashboardService';
 import StatsCard from '../../components/dashboard/StatsCard';
 import RecentActivity from '../../components/dashboard/RecentActivity';
 import DeadlineList from '../../components/dashboard/DeadlineList';
-import { FiFolder, FiPlusCircle, FiCheckSquare, FiAlertCircle } from 'react-icons/fi';
+import { FiFolder, FiPlusCircle, FiCheckSquare, FiAlertCircle, FiCheckCircle } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
 export const StaffDashboard = () => {
@@ -46,30 +46,44 @@ export const StaffDashboard = () => {
       </div>
 
       {stats && (
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
           <StatsCard
             title="Assigned Projects"
-            value={stats.assignedProjects}
+            value={stats.assignedProjects ?? 0}
             icon={<FiFolder className="h-6 w-6 text-indigo-400" />}
             color="indigo"
+            to="/staff/projects"
           />
           <StatsCard
             title="New Assignments"
-            value={stats.newAssignments}
+            value={stats.newAssignments ?? 0}
             icon={<FiPlusCircle className="h-6 w-6 text-amber-400" />}
             color="amber"
+            to="/staff/projects?status=assigned"
           />
           <StatsCard
             title="Pending Tasks"
-            value={stats.pendingTasks}
+            value={stats.pendingTasks ?? 0}
             icon={<FiCheckSquare className="h-6 w-6 text-blue-400" />}
             color="blue"
+            to="/staff/projects?status=pending"
           />
           <StatsCard
             title="Waiting Review"
-            value={stats.waitingForReview}
-            icon={<FiAlertCircle className="h-6 w-6 text-purple-400" />}
-            color="purple"
+            value={stats.waitingForReview ?? 0}
+            icon={<FiAlertCircle className="h-6 w-6" />}
+            color="rose"
+            glow={(stats.waitingForReview ?? 0) > 0}
+            className="lg:col-span-2"
+            to="/staff/projects?status=under_review"
+          />
+          <StatsCard
+            title="Completed Tasks"
+            value={stats.completedTasks ?? 0}
+            icon={<FiCheckCircle className="h-6 w-6 text-emerald-400" />}
+            color="emerald"
+            className="lg:col-span-1"
+            to="/staff/projects?status=completed"
           />
         </div>
       )}

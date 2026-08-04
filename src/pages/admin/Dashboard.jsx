@@ -3,7 +3,7 @@ import { getAdminDashboard } from '../../services/dashboardService';
 import StatsCard from '../../components/dashboard/StatsCard';
 import RecentActivity from '../../components/dashboard/RecentActivity';
 import DeadlineList from '../../components/dashboard/DeadlineList';
-import { FiUsers, FiFileText, FiFolder, FiAlertCircle, FiPieChart } from 'react-icons/fi';
+import { FiUsers, FiUserCheck, FiFileText, FiFolder, FiAlertCircle, FiActivity } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
 export const AdminDashboard = () => {
@@ -46,30 +46,48 @@ export const AdminDashboard = () => {
       </div>
 
       {stats && (
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
           <StatsCard
-            title="Total Users"
-            value={stats.totalUsers}
-            icon={<FiUsers className="h-6 w-6 text-indigo-400" />}
+            title="Total Clients"
+            value={stats.totalClients ?? 0}
+            icon={<FiUsers className="h-6 w-6" />}
             color="indigo"
+            to="/admin/users?role=client"
+          />
+          <StatsCard
+            title="Total Staff"
+            value={stats.totalStaff ?? 0}
+            icon={<FiUserCheck className="h-6 w-6" />}
+            color="emerald"
+            to="/admin/users?role=staff"
           />
           <StatsCard
             title="New Requests"
-            value={stats.newRequests}
-            icon={<FiFileText className="h-6 w-6 text-amber-400" />}
+            value={stats.newRequests ?? 0}
+            icon={<FiFileText className="h-6 w-6" />}
             color="amber"
+            to="/admin/requests?status=new"
           />
           <StatsCard
             title="Active Projects"
-            value={stats.activeProjects}
-            icon={<FiFolder className="h-6 w-6 text-blue-400" />}
+            value={stats.activeProjects ?? 0}
+            icon={<FiFolder className="h-6 w-6" />}
             color="blue"
+            to="/admin/projects?status=active"
           />
           <StatsCard
             title="Pending Reviews"
-            value={stats.pendingReviews}
-            icon={<FiAlertCircle className="h-6 w-6 text-red-400" />}
+            value={stats.pendingReviews ?? 0}
+            icon={<FiAlertCircle className="h-6 w-6" />}
             color="red"
+            to="/admin/projects?status=under_review"
+          />
+          <StatsCard
+            title="Total Activities"
+            value={stats.totalActivities ?? (activities ? activities.length : 0)}
+            icon={<FiActivity className="h-6 w-6" />}
+            color="purple"
+            to="/admin/activity"
           />
         </div>
       )}

@@ -69,7 +69,7 @@ export const CreateUser = () => {
         </Link>
         <div>
           <h1 className="text-2xl font-bold text-white tracking-tight font-sans">Create New User</h1>
-          <p className="text-sm text-slate-400">Add a new admin, staff member, or client account.</p>
+          <p className="text-sm text-slate-400">Add a new staff member or client account.</p>
         </div>
       </div>
 
@@ -151,7 +151,6 @@ export const CreateUser = () => {
             >
               <option value="client">Client</option>
               <option value="staff">Staff</option>
-              <option value="admin">Admin</option>
             </select>
           </div>
 

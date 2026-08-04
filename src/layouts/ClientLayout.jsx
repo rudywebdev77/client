@@ -2,6 +2,7 @@ import React from 'react';
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from '../components/Sidebar';
 import { Topbar } from '../components/Topbar';
+import { CompanyInfoModal } from '../components/CompanyInfoModal';
 
 export const ClientLayout = () => {
   return (
@@ -13,6 +14,7 @@ export const ClientLayout = () => {
           <Outlet />
         </main>
       </div>
+      <CompanyInfoModal />
     </div>
   );
 };

@@ -16,3 +16,25 @@ export const markMessageRead = async (id) => {
   const response = await api.patch(`/messages/${id}/read`);
   return response.data;
 };
+
+export const toggleStarMessage = async (id) => {
+  const response = await api.patch(`/messages/${id}/star`);
+  return response.data;
+};
+
+export const togglePinMessage = async (id) => {
+  const response = await api.patch(`/messages/${id}/pin`);
+  return response.data;
+};
+
+export const toggleReaction = async (id, emoji) => {
+  const response = await api.post(`/messages/${id}/reaction`, { emoji });
+  return response.data;
+};
+
+export const deleteMessage = async (id, deleteType = 'everyone') => {
+  const response = await api.delete(`/messages/${id}`, {
+    params: { deleteType },
+  });
+  return response.data;
+};

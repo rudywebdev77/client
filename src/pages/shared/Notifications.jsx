@@ -1,32 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getNotifications, markRead, markAllRead } from '../../services/notificationService';
-import { FiBell, FiCheck, FiCheckCircle, FiClock } from 'react-icons/fi';
+import { useWebSocket } from '../../context/WebSocketContext';
+import { FiBell, FiCheck, FiCheckCircle, FiClock, FiSearch } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
 export const Notifications = () => {
-  const [notifications, setNotifications] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  const fetchNotifications = async () => {
-    try {
-      const res = await getNotifications();
-      if (res.success) {
-        setNotifications(res.notifications);
-      }
-    } catch (err) {
-      toast.error('Failed to load notifications');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => { fetchNotifications(); }, []);
+  const { notifications, markAsRead, markAllAsRead } = useWebSocket();
+  const [search, setSearch] = useState('');
 
   const handleMarkRead = async (id) => {
     try {
-      await markRead(id);
-      setNotifications(notifications.map(n => n._id === id ? { ...n, isRead: true } : n));
+      await markAsRead(id);
     } catch (err) {
       console.error(err);
     }
@@ -34,13 +18,21 @@ export const Notifications = () => {
 
   const handleMarkAllRead = async () => {
     try {
-      await markAllRead();
-      setNotifications(notifications.map(n => ({ ...n, isRead: true })));
+      await markAllAsRead();
       toast.success('All marked as read');
     } catch (err) {
       toast.error('Failed to mark all as read');
     }
   };
+
+  const filteredNotifications = notifications.filter((notif) => {
+    if (!search.trim()) return true;
+    const cleanSearch = search.trim().toLowerCase();
+    return (
+      notif.title?.toLowerCase().includes(cleanSearch) ||
+      notif.message?.toLowerCase().includes(cleanSearch)
+    );
+  });
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
@@ -57,16 +49,26 @@ export const Notifications = () => {
         </button>
       </div>
 
+      {/* Search Input */}
+      <div className="relative max-w-md">
+        <input
+          type="text"
+          placeholder="Search notifications..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full rounded-xl border border-slate-800 bg-slate-950/40 py-2.5 pl-10 pr-4 text-sm text-white placeholder-slate-500 backdrop-blur-xl focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+        />
+        <FiSearch className="absolute left-3.5 top-3 h-4.5 w-4.5 text-slate-500" />
+      </div>
+
       <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-6 backdrop-blur-xl shadow-xl space-y-3">
-        {loading ? (
-          <div className="flex h-48 items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent"></div></div>
-        ) : notifications.length === 0 ? (
+        {filteredNotifications.length === 0 ? (
           <div className="py-12 text-center text-slate-500">
             <FiBell className="h-10 w-10 mx-auto text-slate-700 mb-2" />
             <p className="text-sm">No notifications found.</p>
           </div>
         ) : (
-          notifications.map((notif) => (
+          filteredNotifications.map((notif) => (
             <div
               key={notif._id}
               className={`flex items-start justify-between rounded-lg border p-4 transition-colors ${

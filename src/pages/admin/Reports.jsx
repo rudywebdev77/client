@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { getProjectReports, getUserReports } from '../../services/reportService';
 import StatsCard from '../../components/dashboard/StatsCard';
-import { FiPieChart, FiCheckCircle, FiFolder, FiUsers, FiClock } from 'react-icons/fi';
+import TablePagination from '../../components/shared/TablePagination';
+import { FiPieChart, FiCheckCircle, FiFolder, FiUsers, FiClock, FiSearch } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
 export const Reports = () => {
   const [projectData, setProjectData] = useState(null);
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
 
   useEffect(() => {
     const fetchReports = async () => {
@@ -26,7 +30,28 @@ export const Reports = () => {
     fetchReports();
   }, []);
 
+  // Reset page to 1 on search change
+  useEffect(() => {
+    setPage(1);
+  }, [search]);
+
   if (loading) return <div className="flex h-64 items-center justify-center"><div className="h-10 w-10 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent"></div></div>;
+
+  // Client-side filtering & pagination on projects report list
+  const allProjects = projectData?.projects || [];
+  const filteredProjects = allProjects.filter((p) => {
+    if (!search.trim()) return true;
+    const cleanSearch = search.trim().toLowerCase();
+    const matchName = p.projectName?.toLowerCase().includes(cleanSearch);
+    const matchClient = p.client?.fullName?.toLowerCase().includes(cleanSearch);
+    const matchStaff = p.assignedStaff?.some(s => s.fullName?.toLowerCase().includes(cleanSearch));
+    const matchStatus = p.status?.toLowerCase().includes(cleanSearch);
+    return matchName || matchClient || matchStaff || matchStatus;
+  });
+
+  const total = filteredProjects.length;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const paginatedProjects = filteredProjects.slice((page - 1) * pageSize, page * pageSize);
 
   return (
     <div className="space-y-6">
@@ -45,8 +70,20 @@ export const Reports = () => {
       )}
 
       {/* Projects breakdown table */}
-      <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-6 space-y-4 shadow-xl">
-        <h3 className="text-sm font-bold text-white uppercase tracking-wider">All Projects Overview Report</h3>
+      <div className="overflow-hidden rounded-xl border border-slate-800 bg-slate-950/40 shadow-xl">
+        <div className="flex flex-col gap-3 px-6 pt-5 pb-3 sm:flex-row sm:items-center sm:justify-between">
+          <h3 className="text-sm font-bold text-white uppercase tracking-wider">All Projects Overview Report</h3>
+          <div className="relative max-w-xs w-full">
+            <input
+              type="text"
+              placeholder="Search reports..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full rounded-lg border border-slate-800 bg-slate-900/50 py-1.5 pl-9 pr-3 text-xs text-white placeholder-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            />
+            <FiSearch className="absolute left-3 top-2 h-3.5 w-3.5 text-slate-500" />
+          </div>
+        </div>
         <div className="overflow-x-auto">
           <table className="w-full border-collapse text-left text-sm text-slate-300">
             <thead className="bg-slate-900/80 text-xs font-semibold uppercase text-slate-400">
@@ -59,7 +96,7 @@ export const Reports = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60">
-              {projectData?.projects?.map((p) => (
+              {paginatedProjects.map((p) => (
                 <tr key={p._id} className="hover:bg-slate-900/20">
                   <td className="px-4 py-3 font-semibold text-white">{p.projectName}</td>
                   <td className="px-4 py-3 text-slate-300">{p.client?.fullName}</td>
@@ -68,9 +105,24 @@ export const Reports = () => {
                   <td className="px-4 py-3 text-slate-400">{new Date(p.deadline).toLocaleDateString()}</td>
                 </tr>
               ))}
+              {paginatedProjects.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="px-4 py-8 text-center text-slate-500 text-sm">No projects to display.</td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
+
+        {/* Pagination */}
+        <TablePagination
+          page={page}
+          totalPages={totalPages}
+          total={total}
+          pageSize={pageSize}
+          onPageChange={setPage}
+          onPageSizeChange={(size) => { setPageSize(size); setPage(1); }}
+        />
       </div>
     </div>
   );

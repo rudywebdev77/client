@@ -28,8 +28,12 @@ export const MyRequests = () => {
   };
 
   useEffect(() => {
+    setPage(1);
+  }, [search, status]);
+
+  useEffect(() => {
     fetchRequests();
-  }, [page, status]);
+  }, [page, status, search]);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
