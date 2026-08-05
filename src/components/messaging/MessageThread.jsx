@@ -840,9 +840,10 @@ export const MessageThread = ({ projectId }) => {
               serverBase = window.location.origin;
             }
 
-            const secureFileUrl = attachmentPath.startsWith('http')
+            const secureFileUrl = (attachmentPath.startsWith('http') || attachmentPath.startsWith('data:'))
               ? attachmentPath
               : `${serverBase}${attachmentPath.startsWith('/') ? '' : '/'}${attachmentPath}`;
+
 
 
             return (
@@ -923,8 +924,18 @@ export const MessageThread = ({ projectId }) => {
                               alt={msg.attachmentName}
                               loading="lazy"
                               className="max-h-64 w-full object-cover group-hover/img:scale-[1.02] transition duration-200 cursor-pointer"
-                              onClick={() => window.open(secureFileUrl, '_blank')}
+                              onClick={() => {
+                                if (secureFileUrl.startsWith('data:')) {
+                                  const w = window.open();
+                                  if (w) {
+                                    w.document.write(`<body style="margin:0;background:#0f172a;display:flex;justify-content:center;align-items:center;min-height:100vh;"><img src="${secureFileUrl}" style="max-width:100%;max-height:100vh;object-fit:contain;"/></body>`);
+                                  }
+                                } else {
+                                  window.open(secureFileUrl, '_blank');
+                                }
+                              }}
                             />
+
                           </div>
                         )}
 
