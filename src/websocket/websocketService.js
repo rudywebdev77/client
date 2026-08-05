@@ -31,6 +31,12 @@ class WebSocketService {
       }
     }
 
+    // Vercel Serverless Functions do not support persistent native WebSockets.
+    // If the socket URL resolves to vercel.app, disable WebSockets cleanly to avoid 404 console errors.
+    if (socketBaseUrl && socketBaseUrl.includes('vercel.app')) {
+      return null;
+    }
+
     // Force wss:// on HTTPS pages to prevent Mixed Content browser security block
     if (isHttps && socketBaseUrl.startsWith('ws://')) {
       socketBaseUrl = socketBaseUrl.replace(/^ws:\/\//, 'wss://');
@@ -53,8 +59,18 @@ class WebSocketService {
 
     try {
       const wsUrl = this.getSocketUrl(token);
+
+      if (!wsUrl) {
+        console.info('[WS] WebSockets are disabled on Vercel Serverless host. Real-time features will use HTTP polling fallback.');
+        this.isConnecting = false;
+        this.manualDisconnect = true;
+        this.triggerEvent('status_change', { status: 'disabled' });
+        return;
+      }
+
       console.log('Connecting to WebSocket server:', wsUrl);
       this.ws = new WebSocket(wsUrl);
+
 
       this.ws.onopen = () => {
         console.log('WebSocket connection established successfully.');
