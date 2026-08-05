@@ -4,10 +4,39 @@ class WebSocketService {
     this.token = null;
     this.listeners = new Map();
     this.reconnectAttempts = 0;
-    this.maxReconnectAttempts = 5;
-    this.reconnectTimeout = 3000; // start with 3 seconds
+    this.maxReconnectAttempts = 3;
+    this.reconnectTimeout = 3000;
     this.manualDisconnect = false;
     this.isConnecting = false;
+  }
+
+  getSocketUrl(token) {
+    let socketBaseUrl = import.meta.env.VITE_SOCKET_URL;
+    const isHttps = typeof window !== 'undefined' && window.location.protocol === 'https:';
+
+    // If no explicit VITE_SOCKET_URL is set, derive dynamically from API URL or location
+    if (!socketBaseUrl) {
+      const apiUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_SERVER_URL;
+      if (apiUrl) {
+        // Convert http(s) to ws(s)
+        socketBaseUrl = apiUrl
+          .replace(/^http:/, 'ws:')
+          .replace(/^https:/, 'wss:')
+          .replace(/\/api\/?$/, '');
+      } else if (typeof window !== 'undefined' && window.location.host) {
+        const protocol = isHttps ? 'wss:' : 'ws:';
+        socketBaseUrl = `${protocol}//${window.location.host}`;
+      } else {
+        socketBaseUrl = 'ws://localhost:5000';
+      }
+    }
+
+    // Force wss:// on HTTPS pages to prevent Mixed Content browser security block
+    if (isHttps && socketBaseUrl.startsWith('ws://')) {
+      socketBaseUrl = socketBaseUrl.replace(/^ws:\/\//, 'wss://');
+    }
+
+    return `${socketBaseUrl}?token=${encodeURIComponent(token)}`;
   }
 
   connect(token) {
@@ -22,58 +51,62 @@ class WebSocketService {
     if (this.isConnecting) return;
     this.isConnecting = true;
 
-    const socketBaseUrl = import.meta.env.VITE_SOCKET_URL || 'ws://localhost:5000';
-    const wsUrl = `${socketBaseUrl}?token=${token}`;
-    console.log('Connecting to WebSocket server...');
-    this.ws = new WebSocket(wsUrl);
+    try {
+      const wsUrl = this.getSocketUrl(token);
+      console.log('Connecting to WebSocket server:', wsUrl);
+      this.ws = new WebSocket(wsUrl);
 
-    this.ws.onopen = () => {
-      console.log('WebSocket connection established successfully.');
-      this.reconnectAttempts = 0;
-      this.reconnectTimeout = 3000;
-      this.isConnecting = false;
-      this.triggerEvent('status_change', { status: 'connected' });
-    };
+      this.ws.onopen = () => {
+        console.log('WebSocket connection established successfully.');
+        this.reconnectAttempts = 0;
+        this.reconnectTimeout = 3000;
+        this.isConnecting = false;
+        this.triggerEvent('status_change', { status: 'connected' });
+      };
 
-    this.ws.onmessage = (event) => {
-      try {
-        const message = JSON.parse(event.data);
-        if (message.type) {
-          this.triggerEvent(message.type, message.data);
+      this.ws.onmessage = (event) => {
+        try {
+          const message = JSON.parse(event.data);
+          if (message.type) {
+            this.triggerEvent(message.type, message.data);
+          }
+        } catch (err) {
+          console.error('Error parsing WebSocket message:', err);
         }
-      } catch (err) {
-        console.error('Error parsing WebSocket message:', err);
-      }
-    };
+      };
 
-    this.ws.onclose = (event) => {
-      this.isConnecting = false;
-      this.triggerEvent('status_change', { status: 'disconnected' });
-      
-      if (!this.manualDisconnect) {
-        console.log(`WebSocket connection closed. Attempting reconnect in ${this.reconnectTimeout / 1000}s...`);
-        this.attemptReconnect();
-      } else {
-        console.log('WebSocket connection closed manually.');
-      }
-    };
+      this.ws.onclose = (event) => {
+        this.isConnecting = false;
+        this.triggerEvent('status_change', { status: 'disconnected' });
 
-    this.ws.onerror = (error) => {
-      console.error('WebSocket connection error:', error);
+        if (!this.manualDisconnect) {
+          this.attemptReconnect();
+        } else {
+          console.log('WebSocket connection closed manually.');
+        }
+      };
+
+      this.ws.onerror = (error) => {
+        console.warn('WebSocket connection warning:', error);
+        this.isConnecting = false;
+      };
+    } catch (err) {
+      console.warn('Failed to initialize WebSocket connection:', err.message || err);
       this.isConnecting = false;
-    };
+      this.triggerEvent('status_change', { status: 'failed' });
+    }
   }
 
   attemptReconnect() {
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-      console.error('Max WebSocket reconnection attempts reached.');
+      console.warn('Max WebSocket reconnection attempts reached. Halting auto-reconnect.');
       this.triggerEvent('status_change', { status: 'failed' });
       return;
     }
 
     this.reconnectAttempts += 1;
     setTimeout(() => {
-      this.reconnectTimeout = Math.min(this.reconnectTimeout * 1.5, 30000); // Exponential backoff up to 30s
+      this.reconnectTimeout = Math.min(this.reconnectTimeout * 1.5, 30000);
       this.connect(this.token);
     }, this.reconnectTimeout);
   }
@@ -89,7 +122,9 @@ class WebSocketService {
   disconnect() {
     this.manualDisconnect = true;
     if (this.ws) {
-      this.ws.close();
+      try {
+        this.ws.close();
+      } catch (e) {}
       this.ws = null;
     }
   }
@@ -122,3 +157,4 @@ class WebSocketService {
 
 const socketService = new WebSocketService();
 export default socketService;
+
