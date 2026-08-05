@@ -872,10 +872,15 @@ export const MessageThread = ({ projectId }) => {
 
                   {/* ── Main Message Box ── */}
                   <div
-                    className={`max-w-[85%] sm:max-w-[72%] rounded-[20px] px-4 py-2.5 sm:px-4.5 sm:py-3 shadow-md relative min-w-[120px] transition-all duration-200 ${isRight
-                        ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-tr-[4px] border border-purple-500/20 shadow-purple-950/30'
-                        : 'bg-slate-800 text-slate-100 rounded-tl-[4px] border border-slate-700/60 shadow-black/30'
-                      }`}
+                    className={`max-w-[85%] sm:max-w-[72%] rounded-[20px] shadow-md relative min-w-[120px] transition-all duration-200 ${
+                      (isImg || isVid)
+                        ? isRight
+                          ? 'bg-slate-900/95 text-white rounded-tr-[4px] border-2 border-purple-500/70 p-1.5 shadow-purple-950/40'
+                          : 'bg-slate-900/95 text-slate-100 rounded-tl-[4px] border-2 border-slate-700/80 p-1.5 shadow-black/40'
+                        : isRight
+                          ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-tr-[4px] border border-purple-500/20 px-4 py-2.5 sm:px-4.5 sm:py-3 shadow-purple-950/30'
+                          : 'bg-slate-800 text-slate-100 rounded-tl-[4px] border border-slate-700/60 px-4 py-2.5 sm:px-4.5 sm:py-3 shadow-black/30'
+                    }`}
                   >
                     {/* Star Badge Indicator */}
                     {msg.isStarred && (
@@ -908,10 +913,11 @@ export const MessageThread = ({ projectId }) => {
 
                     {/* ── Attachment Previews ── */}
                     {hasAttachment && (
-                      <div className="mb-2 overflow-hidden rounded-xl">
+                      <div className={`${msg.message?.trim() ? 'mb-2' : 'mb-1'} overflow-hidden rounded-xl`}>
                         {/* Image Preview */}
                         {isImg && (
                           <div className="relative group/img overflow-hidden rounded-xl bg-slate-950 border border-white/10">
+
                             <img
                               src={secureFileUrl}
                               alt={msg.attachmentName}
