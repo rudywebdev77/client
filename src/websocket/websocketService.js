@@ -129,11 +129,14 @@ class WebSocketService {
 
   send(type, data = {}) {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-      this.ws.send(JSON.stringify({ type, ...data }));
-    } else {
-      console.warn('Cannot send message. WebSocket is not open.');
+      try {
+        this.ws.send(JSON.stringify({ type, ...data }));
+      } catch (err) {
+        // Silently catch send errors
+      }
     }
   }
+
 
   disconnect() {
     this.manualDisconnect = true;
