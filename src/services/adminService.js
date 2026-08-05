@@ -48,3 +48,19 @@ export const sendTestEmail = async (data) => {
   const response = await api.post('/admin/email-settings/test', data);
   return response.data;
 };
+
+export const verifyEmail = async (token) => {
+  const response = await api.post('/auth/verify-email', { token });
+  return response.data;
+};
+
+export const resendEmailVerification = async () => {
+  const response = await api.post('/auth/resend-verification');
+  return response.data;
+};
+
+export const cancelEmailVerification = async () => {
+  const response = await api.post('/auth/cancel-verification');
+  return response.data;
+};
+

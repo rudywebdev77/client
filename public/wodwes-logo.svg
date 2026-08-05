@@ -1,0 +1,33 @@
+<svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="5" result="blur1" />
+      <feGaussianBlur stdDeviation="2" result="blur2" />
+      <feMerge>
+        <feMergeNode in="blur1" />
+        <feMergeNode in="blur2" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+    <linearGradient id="purpleGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#c084fc" />
+      <stop offset="50%" stop-color="#a855f7" />
+      <stop offset="100%" stop-color="#8b5cf6" />
+    </linearGradient>
+  </defs>
+
+  <!-- Glowing Neon Purple Orbital Ring -->
+  <g transform="translate(100, 100) rotate(-22) translate(-100, -100)">
+    <ellipse cx="100" cy="100" rx="84" ry="30" stroke="url(#purpleGlow)" stroke-width="6" fill="none" filter="url(#glow)" />
+    <ellipse cx="100" cy="100" rx="84" ry="30" stroke="#e9d5ff" stroke-width="2.5" fill="none" />
+  </g>
+
+  <!-- White W Letter -->
+  <path d="M 58 74 L 84 148 L 102 102 L 120 148 L 146 74 L 131 74 L 113 124 L 100 88 L 87 124 L 72 74 Z" fill="#FFFFFF" />
+
+  <!-- (LLC) superscript mark -->
+  <g transform="translate(142, 62)">
+    <circle cx="10" cy="8" r="8.5" stroke="#FFFFFF" stroke-width="1.2" fill="none" opacity="0.85" />
+    <text x="10" y="11" text-anchor="middle" font-size="6.5" font-weight="bold" fill="#FFFFFF" font-family="system-ui, sans-serif" opacity="0.95">LLC</text>
+  </g>
+</svg>

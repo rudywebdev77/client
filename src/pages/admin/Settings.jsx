@@ -354,6 +354,13 @@ export const Settings = () => {
     fetchAdminData();
   }, [setUser]);
 
+  // Additional state for Profile Email & Security Confirmation
+  const [profileCurrentPassword, setProfileCurrentPassword] = useState('');
+  const [showProfileCurrentPassword, setShowProfileCurrentPassword] = useState(false);
+  const [emailConfirmModalOpen, setEmailConfirmModalOpen] = useState(false);
+  const [resendingVerification, setResendingVerification] = useState(false);
+  const [cancelingVerification, setCancelingVerification] = useState(false);
+
   // Profile Information Handlers
   const handleProfileChange = (e) => {
     const { name, value } = e.target;
@@ -362,42 +369,115 @@ export const Settings = () => {
 
   const handleCancelProfile = () => {
     setProfileForm(originalProfile);
+    setProfileCurrentPassword('');
     setImagePreview(null);
     toast.dismiss();
     toast('Profile changes discarded', { icon: 'ℹ️' });
   };
 
   const handleSaveProfile = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
+
     if (!profileForm.fullName.trim()) {
       toast.error('Full Name is required');
       return;
     }
 
+    const normalizedEmail = profileForm.email.toLowerCase().trim();
+    if (!normalizedEmail) {
+      toast.error('Email address is required');
+      return;
+    }
+
+    const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+    if (!emailRegex.test(normalizedEmail)) {
+      toast.error('Please enter a valid email address');
+      return;
+    }
+
+    await executeSaveProfile();
+  };
+
+
+  const executeSaveProfile = async () => {
     try {
       setSavingProfile(true);
-      const data = await adminService.updateAdminProfile({
+      const normalizedEmail = profileForm.email.toLowerCase().trim();
+      const isEmailChanging = normalizedEmail !== (user?.email || '').toLowerCase().trim();
+
+      const payload = {
         fullName: profileForm.fullName,
         username: profileForm.username,
         phone: profileForm.phone,
-      });
+        email: normalizedEmail,
+        currentPassword: isEmailChanging ? profileCurrentPassword : undefined,
+      };
 
-      if (data.success) {
-        toast.success(data.message || 'Profile information updated!');
-        setOriginalProfile({
+      console.log('[DEBUG Frontend] Email value before sending request:', profileForm.email);
+      console.log('[DEBUG Frontend] Full payload being sent to /api/admin/profile:', payload);
+
+      const data = await adminService.updateAdminProfile(payload);
+
+      console.log('[DEBUG Frontend] Response received from backend:', data);
+
+      if (data.success && data.user) {
+        toast.success(data.message || 'Profile information updated successfully!');
+        const updated = {
           ...profileForm,
           fullName: data.user.fullName,
           username: data.user.username,
           phone: data.user.phone,
-        });
+          email: data.user.email,
+        };
+        setProfileForm(updated);
+        setOriginalProfile(updated);
         setUser(data.user);
+        setProfileCurrentPassword('');
+        setEmailConfirmModalOpen(false);
+      } else {
+        toast.error(data.message || 'Failed to update profile');
       }
     } catch (err) {
+      console.error('[DEBUG Frontend] Error during profile update request:', err);
       toast.error(err.response?.data?.message || 'Failed to update profile');
     } finally {
       setSavingProfile(false);
     }
   };
+
+
+  const handleResendVerification = async () => {
+    try {
+      setResendingVerification(true);
+      const res = await adminService.resendEmailVerification();
+      if (res.success) {
+        toast.success(res.message || 'Verification email resent successfully!');
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to resend verification email');
+    } finally {
+      setResendingVerification(false);
+    }
+  };
+
+  const handleCancelVerification = async () => {
+    try {
+      setCancelingVerification(true);
+      const res = await adminService.cancelEmailVerification();
+      if (res.success) {
+        toast.success(res.message || 'Pending email change cancelled');
+        if (res.user) {
+          setUser(res.user);
+          setProfileForm((prev) => ({ ...prev, email: res.user.email }));
+        }
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to cancel email verification');
+    } finally {
+      setCancelingVerification(false);
+    }
+  };
+
 
   // Image Upload Handler
   const handleImageChange = async (e) => {
@@ -1311,6 +1391,44 @@ export const Settings = () => {
                 </div>
               </div>
 
+              {/* Pending Email Verification Alert Banner */}
+              {user?.pendingEmail && (
+                <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-fade-in">
+                  <div className="flex items-start gap-3">
+                    <div className="rounded-lg bg-amber-500/20 p-2 text-amber-400 shrink-0">
+                      <FiMail className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-amber-300 uppercase tracking-wider flex items-center gap-2">
+                        <span>Email Verification Pending</span>
+                      </h4>
+                      <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+                        A verification link was sent to <strong className="text-white underline">{user.pendingEmail}</strong>. Your active login email remains <strong className="text-white">{user.email}</strong> until verification is complete.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={handleResendVerification}
+                      disabled={resendingVerification}
+                      className="rounded-xl bg-amber-500/20 border border-amber-500/40 px-3.5 py-2 text-xs font-bold text-amber-300 hover:bg-amber-500/30 transition disabled:opacity-50"
+                    >
+                      {resendingVerification ? 'Sending...' : 'Resend Email'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleCancelVerification}
+                      disabled={cancelingVerification}
+                      className="rounded-xl bg-slate-900 border border-slate-700 px-3.5 py-2 text-xs font-semibold text-slate-400 hover:text-white transition disabled:opacity-50"
+                    >
+                      {cancelingVerification ? 'Canceling...' : 'Cancel Request'}
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* Editable & Read-Only Fields Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Full Name */}
@@ -1363,18 +1481,30 @@ export const Settings = () => {
                   />
                 </div>
 
-                {/* Email Address (Read-Only) */}
+                {/* Email Address (Editable) */}
                 <div>
-                  <label className="block text-xs font-semibold text-slate-400 mb-2 flex items-center gap-1">
-                    <FiMail className="h-3.5 w-3.5 text-slate-400" /> Email Address (Read Only)
+                  <label className="block text-xs font-semibold text-slate-300 mb-2 flex items-center justify-between">
+                    <span className="flex items-center gap-1">
+                      <FiMail className="h-3.5 w-3.5 text-indigo-400" /> Email Address <span className="text-red-400">*</span>
+                    </span>
+                    {user?.pendingEmail && (
+                      <span className="text-xxs font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-md">
+                        Pending Verification
+                      </span>
+                    )}
                   </label>
                   <input
                     type="email"
+                    name="email"
                     value={profileForm.email}
-                    readOnly
-                    disabled
-                    className="w-full cursor-not-allowed rounded-xl border border-slate-800 bg-slate-900/40 px-4 py-2.5 text-sm text-slate-400 font-medium opacity-80"
+                    onChange={handleProfileChange}
+                    placeholder="admin@portal.com"
+                    className="w-full rounded-xl border border-slate-800 bg-slate-900 px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-colors"
+                    required
                   />
+                  <p className="mt-1 text-xxs text-slate-500">
+                    Changing email address requires current password confirmation.
+                  </p>
                 </div>
 
                 {/* Role (Read-Only) */}
@@ -1390,7 +1520,38 @@ export const Settings = () => {
                     className="w-full cursor-not-allowed rounded-xl border border-slate-800 bg-slate-900/40 px-4 py-2.5 text-sm font-semibold text-indigo-400 capitalize opacity-80"
                   />
                 </div>
+
+                {/* Security Password Requirement box when Email Value is Modified */}
+                {profileForm.email.toLowerCase().trim() !== (user?.email || '').toLowerCase().trim() && (
+                  <div className="md:col-span-2 p-4 rounded-xl bg-slate-900/90 border border-indigo-500/30 space-y-2.5 animate-fade-in shadow-inner">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-indigo-300 flex items-center gap-2">
+                      <FiLock className="h-4 w-4 text-indigo-400" /> Confirm Current Password to Change Email
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showProfileCurrentPassword ? 'text' : 'password'}
+                        value={profileCurrentPassword}
+                        onChange={(e) => setProfileCurrentPassword(e.target.value)}
+                        placeholder="Enter your current password..."
+                        className="w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2.5 pr-10 text-xs text-white placeholder-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowProfileCurrentPassword(!showProfileCurrentPassword)}
+                        className="absolute right-3 top-2.5 text-slate-400 hover:text-white"
+                        title={showProfileCurrentPassword ? 'Hide password' : 'Show password'}
+                      >
+                        {showProfileCurrentPassword ? <FiEyeOff className="h-4 w-4" /> : <FiEye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                    <p className="text-xxs text-slate-400">
+                      🔒 Backend security: Your current password will be authenticated before issuing the email verification request.
+                    </p>
+                  </div>
+                )}
               </div>
+
 
               {/* Profile Buttons */}
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800/80">
@@ -1629,7 +1790,75 @@ export const Settings = () => {
             </form>
           </section>
         )}
+
+        {/* ── Confirmation Modal for Email Address Change ── */}
+        {emailConfirmModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fade-in">
+            <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-950 p-6 shadow-2xl space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div className="flex items-center gap-2">
+                  <FiMail className="h-5 w-5 text-indigo-400" />
+                  <h3 className="text-sm font-bold text-white">Confirm Email Address Change</h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setEmailConfirmModalOpen(false)}
+                  className="rounded-lg p-1 text-slate-400 hover:bg-slate-800 hover:text-white"
+                >
+                  <FiX className="h-4 w-4" />
+                </button>
+              </div>
+
+              <div className="space-y-3 text-xs text-slate-300 leading-relaxed">
+                <p>Are you sure you want to change your administrator email address?</p>
+                <div className="rounded-xl bg-slate-900/80 p-3.5 border border-slate-800 space-y-1.5">
+                  <p className="text-slate-400 flex justify-between">
+                    <span>Current Active Email:</span>
+                    <span className="text-white font-medium">{user?.email}</span>
+                  </p>
+                  <p className="text-indigo-400 flex justify-between">
+                    <span>New Email Address:</span>
+                    <span className="text-white font-bold">{profileForm.email.toLowerCase().trim()}</span>
+                  </p>
+                </div>
+                <p className="text-slate-400 text-xxs leading-normal">
+                  📧 A verification link will be sent to the new email address. Your active login email will remain unchanged until verification is complete.
+                </p>
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setEmailConfirmModalOpen(false)}
+                  disabled={savingProfile}
+                  className="rounded-xl border border-slate-800 bg-slate-900 px-4 py-2 text-xs font-semibold text-slate-300 hover:bg-slate-800"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={executeSaveProfile}
+                  disabled={savingProfile}
+                  className="flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2 text-xs font-bold text-white hover:bg-indigo-500 disabled:opacity-50 transition shadow-md shadow-indigo-600/20"
+                >
+                  {savingProfile ? (
+                    <>
+                      <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                      <span>Updating...</span>
+                    </>
+                  ) : (
+                    <>
+                      <FiCheck className="h-4 w-4" />
+                      <span>Confirm & Send Verification</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
 };
+

@@ -146,8 +146,8 @@ export const Sidebar = () => {
 
       {/* Footer / Logout (desktop) */}
       <div className="hidden border-t border-slate-800/80 pt-4 md:block">
-        <div className="flex items-center justify-between px-3">
-          <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between gap-2 px-3">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
             <div className="h-9 w-9 overflow-hidden rounded-full bg-slate-800 flex items-center justify-center text-white font-semibold uppercase shrink-0">
               {user?.profileImage ? (
                 <img
@@ -160,20 +160,21 @@ export const Sidebar = () => {
               )}
             </div>
 
-            <div className="overflow-hidden">
-              <p className="truncate text-xs font-semibold text-white">{user?.fullName}</p>
-              <p className="truncate text-xxs text-slate-500">{user?.email}</p>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-xs font-semibold text-white" title={user?.fullName}>{user?.fullName}</p>
+              <p className="truncate text-xxs text-slate-400 font-mono" title={user?.email}>{user?.email}</p>
             </div>
           </div>
           <button
             onClick={handleLogout}
             title="Sign Out"
-            className="rounded-lg p-1.5 hover:bg-red-500/10 hover:text-red-400 transition-colors"
+            className="rounded-lg p-1.5 hover:bg-red-500/10 hover:text-red-400 transition-colors shrink-0"
           >
             <FiLogOut className="h-5 w-5" />
           </button>
         </div>
       </div>
+
     </aside>
   );
 };

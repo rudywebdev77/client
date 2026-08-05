@@ -12,6 +12,8 @@ import { ClientLayout } from '../layouts/ClientLayout';
 import { Login } from '../pages/auth/Login';
 import { ForgotPassword } from '../pages/auth/ForgotPassword';
 import { ResetPassword } from '../pages/auth/ResetPassword';
+import { VerifyEmail } from '../pages/auth/VerifyEmail';
+
 
 // Dashboards
 import { AdminDashboard } from '../pages/admin/Dashboard';
@@ -92,6 +94,8 @@ export const AppRoutes = () => {
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/reset-password/:token" element={<ResetPassword />} />
+      <Route path="/verify-email" element={<VerifyEmail />} />
+
 
       {/* Role-based home redirect */}
       <Route path="/" element={<RoleBasedRedirect />} />
