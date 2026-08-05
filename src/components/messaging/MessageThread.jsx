@@ -806,18 +806,44 @@ export const MessageThread = ({ projectId }) => {
             const showSeparator = idx === 0 || currentDateStr !== prevDateStr;
 
             // Media attachment mappings
-            const hasAttachment = !!msg.attachment;
-            const isImg = msg.attachmentType === 'image';
-            const isVid = msg.attachmentType === 'video';
-            const isAud = msg.attachmentType === 'audio' || !!msg.voiceUrl;
-            const isPdf = msg.attachmentType === 'pdf';
-            const isWord = msg.attachmentType === 'word';
-            const isExcel = msg.attachmentType === 'excel';
-            const isZip = msg.attachmentType === 'zip';
+            const attachmentPath = msg.attachment || (msg.attachments && msg.attachments[0]?.filePath) || '';
+            const attachmentName = msg.attachmentName || (msg.attachments && msg.attachments[0]?.originalName) || (msg.attachments && msg.attachments[0]?.fileName) || '';
+            const hasAttachment = !!attachmentPath;
 
-            const secureFileUrl = msg.attachment?.startsWith('http')
-              ? msg.attachment
-              : `${import.meta.env.VITE_SERVER_URL || 'http://localhost:5000'}${msg.attachment}`;
+            const lowerAttachment = (attachmentName || attachmentPath).toLowerCase();
+            const isImg =
+              msg.attachmentType === 'image' ||
+              msg.mimeType?.startsWith('image/') ||
+              /\.(jpg|jpeg|png|gif|webp|svg|bmp)(\?.*)?$/i.test(lowerAttachment);
+
+            const isVid =
+              msg.attachmentType === 'video' ||
+              msg.mimeType?.startsWith('video/') ||
+              /\.(mp4|webm|mov|avi|mkv)(\?.*)?$/i.test(lowerAttachment);
+
+            const isAud =
+              msg.attachmentType === 'audio' ||
+              msg.mimeType?.startsWith('audio/') ||
+              !!msg.voiceUrl ||
+              /\.(mp3|wav|ogg|m4a|aac)(\?.*)?$/i.test(lowerAttachment);
+
+            const isPdf = msg.attachmentType === 'pdf' || lowerAttachment.endsWith('.pdf');
+            const isWord = msg.attachmentType === 'word' || lowerAttachment.includes('word') || lowerAttachment.endsWith('.doc') || lowerAttachment.endsWith('.docx');
+            const isExcel = msg.attachmentType === 'excel' || lowerAttachment.includes('excel') || lowerAttachment.endsWith('.xls') || lowerAttachment.endsWith('.xlsx');
+            const isZip = msg.attachmentType === 'zip' || lowerAttachment.endsWith('.zip') || lowerAttachment.endsWith('.rar');
+
+            let serverBase = import.meta.env.VITE_SERVER_URL;
+            if (!serverBase && import.meta.env.VITE_API_URL) {
+              serverBase = import.meta.env.VITE_API_URL.replace(/\/api\/?$/, '');
+            }
+            if (!serverBase && typeof window !== 'undefined') {
+              serverBase = window.location.origin;
+            }
+
+            const secureFileUrl = attachmentPath.startsWith('http')
+              ? attachmentPath
+              : `${serverBase}${attachmentPath.startsWith('/') ? '' : '/'}${attachmentPath}`;
+
 
             return (
               <div key={msg._id} className="flex flex-col">
