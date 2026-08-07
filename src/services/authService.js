@@ -1,5 +1,13 @@
 import api from './api';
 
+export const signup = async (userData) => {
+  const response = await api.post('/auth/signup', userData);
+  if (response.data.accessToken) {
+    localStorage.setItem('accessToken', response.data.accessToken);
+  }
+  return response.data;
+};
+
 export const login = async (email, password) => {
   const response = await api.post('/auth/login', { email, password });
   if (response.data.accessToken) {

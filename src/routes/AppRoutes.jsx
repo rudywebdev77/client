@@ -2,6 +2,7 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { ProtectedRoute } from '../components/ProtectedRoute';
+import { PublicRoute } from '../components/PublicRoute';
 
 // Layouts
 import { AdminLayout } from '../layouts/AdminLayout';
@@ -10,6 +11,7 @@ import { ClientLayout } from '../layouts/ClientLayout';
 
 // Auth Pages
 import { Login } from '../pages/auth/Login';
+import { SignUp } from '../pages/auth/SignUp';
 import { ForgotPassword } from '../pages/auth/ForgotPassword';
 import { ResetPassword } from '../pages/auth/ResetPassword';
 import { VerifyEmail } from '../pages/auth/VerifyEmail';
@@ -89,16 +91,17 @@ const RoleBasedRedirect = () => {
 export const AppRoutes = () => {
   return (
     <Routes>
-      {/* Public routes */}
-      <Route path="/login" element={<Login />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/reset-password" element={<ResetPassword />} />
-      <Route path="/reset-password/:token" element={<ResetPassword />} />
-      <Route path="/verify-email" element={<VerifyEmail />} />
+      {/* Public routes (wrapped in PublicRoute to prevent authenticated access) */}
+      <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+      <Route path="/signup" element={<PublicRoute><SignUp /></PublicRoute>} />
+      <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
+      <Route path="/reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
+      <Route path="/reset-password/:token" element={<PublicRoute><ResetPassword /></PublicRoute>} />
+      <Route path="/verify-email" element={<PublicRoute><VerifyEmail /></PublicRoute>} />
 
-
-      {/* Role-based home redirect */}
+      {/* Role-based home & dashboard redirects */}
       <Route path="/" element={<RoleBasedRedirect />} />
+      <Route path="/dashboard" element={<RoleBasedRedirect />} />
 
       {/* ── Admin routes ── */}
       <Route

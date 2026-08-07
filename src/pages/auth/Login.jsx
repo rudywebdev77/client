@@ -12,7 +12,9 @@ export const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const from = location.state?.from?.pathname || '/';
+  const rawFrom = location.state?.from?.pathname;
+  const isPublicRoute = rawFrom && ['/login', '/signup', '/forgot-password', '/reset-password', '/verify-email'].some(p => rawFrom.startsWith(p));
+  const from = isPublicRoute || !rawFrom ? '/' : rawFrom;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -24,7 +26,7 @@ export const Login = () => {
     const res = await loginUser(email, password);
     if (res.success) {
       toast.success('Logged in successfully!');
-      navigate(from === '/' ? '/' : from, { replace: true });
+      navigate(from, { replace: true });
     } else {
       toast.error(res.error || 'Invalid credentials');
     }
@@ -144,6 +146,17 @@ export const Login = () => {
             </button>
           </div>
         </form>
+
+        {/* Link to SignUp */}
+        <p className="mt-6 text-center text-xs text-slate-400">
+          Don't have an account?{' '}
+          <Link
+            to="/signup"
+            className="font-semibold text-purple-400 hover:text-purple-300 hover:underline transition-colors"
+          >
+            Sign up
+          </Link>
+        </p>
       </div>
     </div>
   );

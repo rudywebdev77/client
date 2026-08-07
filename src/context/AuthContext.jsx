@@ -35,6 +35,24 @@ export const AuthProvider = ({ children }) => {
     fetchCurrentUser();
   }, [fetchCurrentUser]);
 
+  const signupUser = async (userData) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await authService.signup(userData);
+      if (data.success) {
+        setUser(data.user);
+        return { success: true };
+      }
+    } catch (err) {
+      const msg = err.response?.data?.message || 'Sign up failed. Please try again.';
+      setError(msg);
+      return { success: false, error: msg };
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const loginUser = async (email, password) => {
     setLoading(true);
     setError(null);
@@ -73,6 +91,7 @@ export const AuthProvider = ({ children }) => {
         loading,
         error,
         setUser,
+        signupUser,
         loginUser,
         logoutUser,
         refreshUser: fetchCurrentUser,
