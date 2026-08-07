@@ -305,15 +305,15 @@ const TopSummaryCard = ({
   return (
     <div
       onClick={onClick}
-      className={`relative overflow-hidden rounded-xl border px-5 py-3.5 backdrop-blur-xl transition-all duration-300 cursor-pointer select-none ${
+      className={`relative overflow-hidden rounded-xl border px-3.5 sm:px-4 py-3.5 backdrop-blur-xl transition-all duration-300 cursor-pointer select-none ${
         isActive
           ? `scale-[1.02] ${themeConfig.activeThemeClass}`
           : `opacity-90 hover:opacity-100 hover:-translate-y-0.5 ${themeConfig.themeClass}`
       }`}
     >
-      <div className="flex items-center justify-between">
-        <div>
-          <p className={`text-xxs font-semibold uppercase tracking-wider ${isActive ? (isDarkMode ? 'text-white font-bold' : 'text-slate-900 font-bold') : themeConfig.titleClass}`}>
+      <div className="flex items-center justify-between gap-1">
+        <div className="min-w-0 flex-1">
+          <p className={`text-xxs font-semibold uppercase tracking-wider whitespace-nowrap ${isActive ? (isDarkMode ? 'text-white font-bold' : 'text-slate-900 font-bold') : themeConfig.titleClass}`}>
             {label}
           </p>
           {loading ? (
