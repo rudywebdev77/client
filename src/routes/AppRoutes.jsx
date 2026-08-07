@@ -1,70 +1,69 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { ProtectedRoute } from '../components/ProtectedRoute';
 import { PublicRoute } from '../components/PublicRoute';
+import { PageSkeleton } from '../components/common/SkeletonLoaders';
 
 // Layouts
 import { AdminLayout } from '../layouts/AdminLayout';
 import { StaffLayout } from '../layouts/StaffLayout';
 import { ClientLayout } from '../layouts/ClientLayout';
 
-// Auth Pages
-import { Login } from '../pages/auth/Login';
-import { SignUp } from '../pages/auth/SignUp';
-import { ForgotPassword } from '../pages/auth/ForgotPassword';
-import { ResetPassword } from '../pages/auth/ResetPassword';
-import { VerifyEmail } from '../pages/auth/VerifyEmail';
+// Auth Pages (Lazy)
+const Login = lazy(() => import('../pages/auth/Login').then(m => ({ default: m.Login })));
+const SignUp = lazy(() => import('../pages/auth/SignUp').then(m => ({ default: m.SignUp })));
+const ForgotPassword = lazy(() => import('../pages/auth/ForgotPassword').then(m => ({ default: m.ForgotPassword })));
+const ResetPassword = lazy(() => import('../pages/auth/ResetPassword').then(m => ({ default: m.ResetPassword })));
+const VerifyEmail = lazy(() => import('../pages/auth/VerifyEmail').then(m => ({ default: m.VerifyEmail })));
 
+// Dashboards (Lazy)
+const AdminDashboard = lazy(() => import('../pages/admin/Dashboard').then(m => ({ default: m.AdminDashboard })));
+const StaffDashboard = lazy(() => import('../pages/staff/Dashboard').then(m => ({ default: m.StaffDashboard })));
+const ClientDashboard = lazy(() => import('../pages/client/Dashboard').then(m => ({ default: m.ClientDashboard })));
 
-// Dashboards
-import { AdminDashboard } from '../pages/admin/Dashboard';
-import { StaffDashboard } from '../pages/staff/Dashboard';
-import { ClientDashboard } from '../pages/client/Dashboard';
+// Admin — Users (Lazy)
+const UserList = lazy(() => import('../pages/admin/users/UserList').then(m => ({ default: m.UserList })));
+const CreateUser = lazy(() => import('../pages/admin/users/CreateUser').then(m => ({ default: m.CreateUser })));
+const EditUser = lazy(() => import('../pages/admin/users/EditUser').then(m => ({ default: m.EditUser })));
+const UserDetail = lazy(() => import('../pages/admin/users/UserDetail').then(m => ({ default: m.UserDetail })));
 
-// Admin — Users
-import { UserList } from '../pages/admin/users/UserList';
-import { CreateUser } from '../pages/admin/users/CreateUser';
-import { EditUser } from '../pages/admin/users/EditUser';
-import { UserDetail } from '../pages/admin/users/UserDetail';
+// Admin — Requests (Lazy)
+const AllRequests = lazy(() => import('../pages/admin/requests/AllRequests').then(m => ({ default: m.AllRequests })));
+const ReviewRequest = lazy(() => import('../pages/admin/requests/ReviewRequest').then(m => ({ default: m.ReviewRequest })));
 
-// Admin — Requests
-import { AllRequests } from '../pages/admin/requests/AllRequests';
-import { ReviewRequest } from '../pages/admin/requests/ReviewRequest';
+// Admin — Projects (Lazy)
+const AllProjects = lazy(() => import('../pages/admin/projects/AllProjects').then(m => ({ default: m.AllProjects })));
+const CreateProject = lazy(() => import('../pages/admin/projects/CreateProject').then(m => ({ default: m.CreateProject })));
+const ProjectDetail = lazy(() => import('../pages/admin/projects/ProjectDetail').then(m => ({ default: m.ProjectDetail })));
+const EditProject = lazy(() => import('../pages/admin/projects/EditProject').then(m => ({ default: m.EditProject })));
 
-// Admin — Projects
-import { AllProjects } from '../pages/admin/projects/AllProjects';
-import { CreateProject } from '../pages/admin/projects/CreateProject';
-import { ProjectDetail } from '../pages/admin/projects/ProjectDetail';
-import { EditProject } from '../pages/admin/projects/EditProject';
+// Admin — Reports & Settings (Lazy)
+const Reports = lazy(() => import('../pages/admin/Reports').then(m => ({ default: m.Reports })));
+const FileManager = lazy(() => import('../pages/admin/FileManager').then(m => ({ default: m.FileManager })));
+const AdminSettings = lazy(() => import('../pages/admin/Settings').then(m => ({ default: m.Settings })));
 
-// Admin — Reports & Settings
-import { Reports } from '../pages/admin/Reports';
-import { FileManager } from '../pages/admin/FileManager';
-import { Settings as AdminSettings } from '../pages/admin/Settings';
+// Staff — Projects & Settings (Lazy)
+const StaffMyProjects = lazy(() => import('../pages/staff/projects/MyProjects').then(m => ({ default: m.MyProjects })));
+const ProjectWork = lazy(() => import('../pages/staff/projects/ProjectWork').then(m => ({ default: m.ProjectWork })));
+const StaffSettings = lazy(() => import('../pages/staff/Settings').then(m => ({ default: m.Settings })));
 
-// Staff — Projects & Settings
-import { MyProjects as StaffMyProjects } from '../pages/staff/projects/MyProjects';
-import { ProjectWork } from '../pages/staff/projects/ProjectWork';
-import { Settings as StaffSettings } from '../pages/staff/Settings';
+// Client — Requests (Lazy)
+const SubmitRequest = lazy(() => import('../pages/client/requests/SubmitRequest').then(m => ({ default: m.SubmitRequest })));
+const MyRequests = lazy(() => import('../pages/client/requests/MyRequests').then(m => ({ default: m.MyRequests })));
+const RequestDetail = lazy(() => import('../pages/client/requests/RequestDetail').then(m => ({ default: m.RequestDetail })));
 
+// Client — Projects (Lazy)
+const ClientMyProjects = lazy(() => import('../pages/client/projects/MyProjects').then(m => ({ default: m.MyProjects })));
+const ProjectView = lazy(() => import('../pages/client/projects/ProjectView').then(m => ({ default: m.ProjectView })));
 
-// Client — Requests
-import { SubmitRequest } from '../pages/client/requests/SubmitRequest';
-import { MyRequests } from '../pages/client/requests/MyRequests';
-import { RequestDetail } from '../pages/client/requests/RequestDetail';
+// Client — Activity & Settings (Lazy)
+const Activity = lazy(() => import('../pages/client/Activity').then(m => ({ default: m.Activity })));
+const ClientSettings = lazy(() => import('../pages/client/Settings').then(m => ({ default: m.Settings })));
 
-// Client — Projects
-import { MyProjects as ClientMyProjects } from '../pages/client/projects/MyProjects';
-import { ProjectView } from '../pages/client/projects/ProjectView';
-
-// Client — Activity & Settings
-import { Activity } from '../pages/client/Activity';
-import { Settings as ClientSettings } from '../pages/client/Settings';
-
-// Shared
-import { Profile } from '../pages/shared/Profile';
-import { Notifications } from '../pages/shared/Notifications';
+// Shared (Lazy)
+const Profile = lazy(() => import('../pages/shared/Profile').then(m => ({ default: m.Profile })));
+const Notifications = lazy(() => import('../pages/shared/Notifications').then(m => ({ default: m.Notifications })));
 
 // Redirect helper
 const RoleBasedRedirect = () => {
@@ -90,96 +89,98 @@ const RoleBasedRedirect = () => {
 
 export const AppRoutes = () => {
   return (
-    <Routes>
-      {/* Public routes (wrapped in PublicRoute to prevent authenticated access) */}
-      <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
-      <Route path="/signup" element={<PublicRoute><SignUp /></PublicRoute>} />
-      <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
-      <Route path="/reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
-      <Route path="/reset-password/:token" element={<PublicRoute><ResetPassword /></PublicRoute>} />
-      <Route path="/verify-email" element={<PublicRoute><VerifyEmail /></PublicRoute>} />
+    <Suspense fallback={<PageSkeleton />}>
+      <Routes>
+        {/* Public routes */}
+        <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+        <Route path="/signup" element={<PublicRoute><SignUp /></PublicRoute>} />
+        <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
+        <Route path="/reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
+        <Route path="/reset-password/:token" element={<PublicRoute><ResetPassword /></PublicRoute>} />
+        <Route path="/verify-email" element={<PublicRoute><VerifyEmail /></PublicRoute>} />
 
-      {/* Role-based home & dashboard redirects */}
-      <Route path="/" element={<RoleBasedRedirect />} />
-      <Route path="/dashboard" element={<RoleBasedRedirect />} />
+        {/* Role-based home & dashboard redirects */}
+        <Route path="/" element={<RoleBasedRedirect />} />
+        <Route path="/dashboard" element={<RoleBasedRedirect />} />
 
-      {/* ── Admin routes ── */}
-      <Route
-        path="/admin"
-        element={
-          <ProtectedRoute allowedRoles={['admin']}>
-            <AdminLayout />
-          </ProtectedRoute>
-        }
-      >
-        <Route index element={<AdminDashboard />} />
+        {/* ── Admin routes ── */}
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <AdminLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<AdminDashboard />} />
 
-        {/* Users */}
-        <Route path="users" element={<UserList />} />
-        <Route path="users/new" element={<CreateUser />} />
-        <Route path="users/edit/:id" element={<EditUser />} />
-        <Route path="users/:id" element={<UserDetail />} />
+          {/* Users */}
+          <Route path="users" element={<UserList />} />
+          <Route path="users/new" element={<CreateUser />} />
+          <Route path="users/edit/:id" element={<EditUser />} />
+          <Route path="users/:id" element={<UserDetail />} />
 
-        {/* Requests */}
-        <Route path="requests" element={<AllRequests />} />
-        <Route path="requests/:id" element={<ReviewRequest />} />
+          {/* Requests */}
+          <Route path="requests" element={<AllRequests />} />
+          <Route path="requests/:id" element={<ReviewRequest />} />
 
-        {/* Projects */}
-        <Route path="projects" element={<AllProjects />} />
-        <Route path="projects/new" element={<CreateProject />} />
-        <Route path="projects/:id" element={<ProjectDetail />} />
-        <Route path="projects/edit/:id" element={<EditProject />} />
+          {/* Projects */}
+          <Route path="projects" element={<AllProjects />} />
+          <Route path="projects/new" element={<CreateProject />} />
+          <Route path="projects/:id" element={<ProjectDetail />} />
+          <Route path="projects/edit/:id" element={<EditProject />} />
 
-        {/* Files, Reports, Profile, Notifications, Activity, Settings */}
-        <Route path="files" element={<FileManager />} />
-        <Route path="reports" element={<Reports />} />
-        <Route path="profile" element={<Profile />} />
-        <Route path="notifications" element={<Notifications />} />
-        <Route path="activity" element={<Activity />} />
-        <Route path="settings" element={<AdminSettings />} />
-      </Route>
+          {/* Files, Reports, Profile, Notifications, Activity, Settings */}
+          <Route path="files" element={<FileManager />} />
+          <Route path="reports" element={<Reports />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="notifications" element={<Notifications />} />
+          <Route path="activity" element={<Activity />} />
+          <Route path="settings" element={<AdminSettings />} />
+        </Route>
 
-      {/* ── Staff routes ── */}
-      <Route
-        path="/staff"
-        element={
-          <ProtectedRoute allowedRoles={['staff']}>
-            <StaffLayout />
-          </ProtectedRoute>
-        }
-      >
-        <Route index element={<StaffDashboard />} />
-        <Route path="projects" element={<StaffMyProjects />} />
-        <Route path="projects/:id" element={<ProjectWork />} />
-        <Route path="profile" element={<Profile />} />
-        <Route path="notifications" element={<Notifications />} />
-        <Route path="activity" element={<Activity />} />
-        <Route path="settings" element={<StaffSettings />} />
-      </Route>
+        {/* ── Staff routes ── */}
+        <Route
+          path="/staff"
+          element={
+            <ProtectedRoute allowedRoles={['staff']}>
+              <StaffLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<StaffDashboard />} />
+          <Route path="projects" element={<StaffMyProjects />} />
+          <Route path="projects/:id" element={<ProjectWork />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="notifications" element={<Notifications />} />
+          <Route path="activity" element={<Activity />} />
+          <Route path="settings" element={<StaffSettings />} />
+        </Route>
 
-      {/* ── Client routes ── */}
-      <Route
-        path="/client"
-        element={
-          <ProtectedRoute allowedRoles={['client']}>
-            <ClientLayout />
-          </ProtectedRoute>
-        }
-      >
-        <Route index element={<ClientDashboard />} />
-        <Route path="requests/new" element={<SubmitRequest />} />
-        <Route path="requests" element={<MyRequests />} />
-        <Route path="requests/:id" element={<RequestDetail />} />
-        <Route path="projects" element={<ClientMyProjects />} />
-        <Route path="projects/:id" element={<ProjectView />} />
-        <Route path="profile" element={<Profile />} />
-        <Route path="notifications" element={<Notifications />} />
-        <Route path="activity" element={<Activity />} />
-        <Route path="settings" element={<ClientSettings />} />
-      </Route>
+        {/* ── Client routes ── */}
+        <Route
+          path="/client"
+          element={
+            <ProtectedRoute allowedRoles={['client']}>
+              <ClientLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<ClientDashboard />} />
+          <Route path="requests/new" element={<SubmitRequest />} />
+          <Route path="requests" element={<MyRequests />} />
+          <Route path="requests/:id" element={<RequestDetail />} />
+          <Route path="projects" element={<ClientMyProjects />} />
+          <Route path="projects/:id" element={<ProjectView />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="notifications" element={<Notifications />} />
+          <Route path="activity" element={<Activity />} />
+          <Route path="settings" element={<ClientSettings />} />
+        </Route>
 
-      {/* Catch-all fallback */}
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+        {/* Catch-all fallback */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Suspense>
   );
 };
