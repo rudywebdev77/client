@@ -89,11 +89,26 @@ api.interceptors.response.use(
         processQueue(refreshError, null);
         isRefreshing = false;
         
-        // Clear auth data and redirect to login
-        localStorage.removeItem('accessToken');
-        if (window.location.pathname !== '/login') {
-          window.location.href = '/login';
+        console.error('[API Interceptor] Token refresh failed:', refreshError);
+
+        // Only clear auth data and redirect to login if the server explicitly rejected the refresh token
+        // with a 4xx client authentication error (400, 401, 403)
+        const isAuthError = refreshError.response && (
+          refreshError.response.status === 401 ||
+          refreshError.response.status === 403 ||
+          refreshError.response.status === 400
+        );
+
+        if (isAuthError) {
+          console.warn('[API Interceptor] Session invalid or expired. Redirecting to login...');
+          localStorage.removeItem('accessToken');
+          if (window.location.pathname !== '/login') {
+            window.location.href = '/login';
+          }
+        } else {
+          console.warn('[API Interceptor] Network or server error during token refresh. Keeping session intact.');
         }
+
         return Promise.reject(refreshError);
       }
     }
