@@ -13,17 +13,44 @@ export const AuthProvider = ({ children }) => {
       const accessToken = localStorage.getItem('accessToken');
       if (accessToken) {
         const data = await authService.getMe();
-        if (data.success) {
+        if (data.success && data.user) {
           setUser(data.user);
-        } else {
-          setUser(null);
-          localStorage.removeItem('accessToken');
+          return;
         }
-      } else {
-        setUser(null);
       }
+      
+      // Fallback: Attempt session recovery via HTTP-only refresh token cookie if available
+      try {
+        const refreshRes = await authService.refreshToken();
+        if (refreshRes.success && refreshRes.accessToken) {
+          localStorage.setItem('accessToken', refreshRes.accessToken);
+          const data = await authService.getMe();
+          if (data.success && data.user) {
+            setUser(data.user);
+            return;
+          }
+        }
+      } catch (rErr) {
+        // Refresh token failed or cookie unavailable
+      }
+
+      setUser(null);
+      localStorage.removeItem('accessToken');
     } catch (err) {
-      console.error('Failed to retrieve user info', err);
+      // If getMe failed (e.g. 401 token expired), attempt session recovery via refresh token
+      try {
+        const refreshRes = await authService.refreshToken();
+        if (refreshRes.success && refreshRes.accessToken) {
+          localStorage.setItem('accessToken', refreshRes.accessToken);
+          const data = await authService.getMe();
+          if (data.success && data.user) {
+            setUser(data.user);
+            return;
+          }
+        }
+      } catch (rErr) {
+        // Refresh token recovery failed
+      }
       setUser(null);
       localStorage.removeItem('accessToken');
     } finally {

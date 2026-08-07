@@ -29,6 +29,14 @@ export const getMe = async () => {
   return response.data;
 };
 
+export const refreshToken = async () => {
+  const response = await api.post('/auth/refresh-token');
+  if (response.data.accessToken) {
+    localStorage.setItem('accessToken', response.data.accessToken);
+  }
+  return response.data;
+};
+
 export const forgotPassword = async (email) => {
   const response = await api.post('/auth/forgot-password', { email });
   return response.data;
