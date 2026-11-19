@@ -36,7 +36,7 @@ export const Reports = () => {
   }, [search]);
 
   if (loading) return <div className="flex h-64 items-center justify-center"><div className="h-10 w-10 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent"></div></div>;
-
+ 
   // Client-side filtering & pagination on projects report list
   const allProjects = projectData?.projects || [];
   const filteredProjects = allProjects.filter((p) => {
