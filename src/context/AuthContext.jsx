@@ -85,7 +85,7 @@ export const AuthProvider = ({ children }) => {
         return { success: true };
       }
     } catch (err) {
-      const msg = err.response?.data?.message || (err.message === 'Network Error' || !err.response ? 'Cannot connect to server. Please check if the backend server is running on port 5000.' : 'Login failed. Please check credentials.');
+      const msg = err.response?.data?.message || (err.message === 'Network Error' || !err.response ? 'Cannot connect to server. Please check your network connection or server status.' : 'Login failed. Please check credentials.');
       setError(msg);
       return { success: false, error: msg };
     } finally {
